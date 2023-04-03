@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Validation report </title>
+</head>
+<body>
+	<h1>Validation report</h1>
+	<section>
+		<h2>General info</h2>
+		<table>
+			<th>Date</th><td>{{ timestamp }}</td>
+			<th>SHACL file</th><td>{{ shacl }}</td>
+			<th>Data file</th><td>{{ data }}</td>
+		</table>
+	</section>
+	<section>
+		<h2>Errors</h2>
+		{% for path in tree.entrySet() %}
+		<section>
+		<h3>{{ path.key }}</h3>
+		<table>
+			{% set rows = path.value %}
+			<th>Focus node</th><th>Constraint</th><th>Value</th>
+			{% for row in rows %}
+				<td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td>
+			{% endfor %}
+		</table>
+		</section>
+		{% endfor %}
+	</section>
+	<section>
+		<h2>Warnings</h2>
+	</section>
+</body>
+</html>
+

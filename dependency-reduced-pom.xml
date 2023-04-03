@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>be.fgov.bosa</groupId>
+  <artifactId>shaclvalidator</artifactId>
+  <name>SHACL Validator</name>
+  <version>1.0.0</version>
+  <description>Command-line SHACL validator using Eclipse RDF4J</description>
+  <inceptionYear>2023</inceptionYear>
+  <developers>
+    <developer>
+      <id>barth</id>
+      <name>Bart Hanssens</name>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>BSD-2-Clause</name>
+    </license>
+  </licenses>
+  <organization>
+    <name>FPS BOSA</name>
+    <url>https://bosa.belgium.be</url>
+  </organization>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>2.0.0</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.4.1</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer>
+                  <mainClass>${exec.mainClass}</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <properties>
+    <maven.compiler.target>17</maven.compiler.target>
+    <exec.mainClass>be.fgov.bosa.shaclvalidator.Main</exec.mainClass>
+    <maven.compiler.source>17</maven.compiler.source>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <rdf4j.version>4.2.3</rdf4j.version>
+  </properties>
+</project>

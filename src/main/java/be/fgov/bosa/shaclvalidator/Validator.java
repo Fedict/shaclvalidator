@@ -118,6 +118,15 @@ public class Validator implements AutoCloseable {
 		return validate(data, format);
 	}
 
+	/**
+	 * Get the underlying repository;
+	 * 
+	 * @return 
+	 */
+	public Repository getRepository() {
+		return repo;
+	}
+
 	@Override
 	public void close() {
 		if (repo != null) {

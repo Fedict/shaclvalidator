@@ -1,35 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>Validation report </title>
+	<style>
+section {
+	padding: 1em;		
+}
+h2 {
+	border-left: .333em solid;
+}
+table, th, td {
+	border: 0.1em solid;
+}
+th, td {
+	padding: 0.25em;
+}
+table {
+	width: 100%;
+}
+
+	</style>
 </head>
 <body>
 	<h1>Validation report</h1>
-	<section>
+	<section class="info">
 		<h2>General info</h2>
 		<table>
-			<th>Date</th><td>{{ timestamp }}</td>
-			<th>SHACL file</th><td>{{ shacl }}</td>
-			<th>Data file</th><td>{{ data }}</td>
+			<tr><th>Date</th><td>{{ timestamp }}</td></tr>
+			<tr><th>SHACL file</th><td>{{ shacl }}</td></tr>
+			<tr><th>Data file</th><td>{{ data }}</td></tr>
 		</table>
 	</section>
-	<section>
+	<section class="error">
 		<h2>Errors</h2>
-		{% for path in tree.entrySet() %}
-		<section>
-		<h3>{{ path.key }}</h3>
+		{% for entry in errors.values() %}
+		<pre>{{ entry.shape }}</pre>
 		<table>
-			{% set rows = path.value %}
-			<th>Focus node</th><th>Constraint</th><th>Value</th>
-			{% for row in rows %}
-				<td>{{ row[0] }}</td><td>{{ row[1] }}</td><td>{{ row[2] }}</td>
+			<tr><th>Focus node</th><th>Constraint</th><th>Value</th></tr>
+			{% for issue in entry.issues %}
+				<tr><td>{{ issue.node }}</td><td>{{ issue.component }}</td><td>{{ issue.value }}</td></tr>
 			{% endfor %}
 		</table>
-		</section>
 		{% endfor %}
 	</section>
-	<section>
+	<section class="warning">
 		<h2>Warnings</h2>
+		{% for entry in warnings.values() %}
+		<pre>{{ entry.shape }}</pre>
+		<table>
+			<tr><th>Focus node</th><th>Constraint</th><th>Value</th></tr>
+			{% for issue in entry.issues %}
+				<tr><td>{{ issue.node }}</td><td>{{ issue.component }}</td><td>{{ issue.value }}</td></tr>
+			{% endfor %}
+		</table>
+		{% endfor %}
 	</section>
 </body>
 </html>

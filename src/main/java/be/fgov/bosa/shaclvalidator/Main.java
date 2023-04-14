@@ -26,12 +26,12 @@
 package be.fgov.bosa.shaclvalidator;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.Writer;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import org.apache.commons.io.FilenameUtils;
 
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -53,20 +53,59 @@ import picocli.CommandLine.Option;
 public class Main implements Runnable {
 	private final static Logger LOG = LoggerFactory.getLogger(Main.class);
 
-    @Option(names = "--data", description = "Data file location", required = true)
+    @Option(names = "--data", description = "Data file location (URL or local file)", required = true)
     URL data;
 
     @Option(names = "--format", description = "Data file format")
     Optional<String> format;
 
-    @Option(names = "--shacl", description = "SHACL file location", required = true)
+    @Option(names = "--shacl", description = "SHACL file location (URL or local file)", required = true)
     URL shacl;
 
-    @Option(names = "--reportHtml", description = "Write HTML report to this file")
-    Optional<Path> htmlreport;
+    @Option(names = "--report", description = "Write report to this file(s), format can be HTML, TTL or MD")
+    Path[] reports;
 
-    @Option(names = "--reportTurtle", description = "Write Turtle report to this file")
-    Optional<Path> ttlreport;
+    @Option(names = "--statsClasses", description = "Count number of classes")
+    boolean statClasses;
+
+    @Option(names = "--statsProperties", description = "Count number of predicates/properties")
+    boolean statProperties;
+
+    @Option(names = "--statsValues", description = "Count number of values for one or more properties")
+    String[] statValues;
+
+	/**
+	 * Write errors and statistics, if any
+	 * 
+	 * @param errors
+	 * @param stats
+	 * @throws IOException 
+	 */
+	private void writeReports(Model errors, Statistics stats) throws IOException {
+		if (reports == null) {
+			Rio.write(errors, System.out, RDFFormat.TURTLE);
+			return;
+		}
+
+		for(Path report: reports) {
+			LOG.info("Writing report to {}", report);
+			String ext = FilenameUtils.getExtension(report.toString());
+	
+			if (ext.equals("md") || ext.equals("html")) {
+				TemplateReport tmpl = new TemplateReport(errors, shacl, data);
+				tmpl.prepare();
+				
+				try(Writer w = Files.newBufferedWriter(report)) {
+					tmpl.merge(ext, w);					
+				}
+			}
+			if (ext.equals("ttl")) {
+				try(Writer w = Files.newBufferedWriter(report)) {
+					Rio.write(errors, w, RDFFormat.TURTLE);
+				}
+			}
+		}
+	}
 
 	/**
 	 * Main
@@ -80,18 +119,13 @@ public class Main implements Runnable {
 	@Override
     public void run() {
 		try {
+			
 			Validator validator = new Validator();
 			Model errors = validator.validate(shacl, data, format);
-			
-			try(OutputStream out = ttlreport.isPresent() ? Files.newOutputStream(ttlreport.get()) : System.out) {
-				Rio.write(errors, out, RDFFormat.TURTLE);
-			}
 
-			if (htmlreport.isPresent()) {
-				HtmlReport htmlReport = new HtmlReport(errors, shacl, data);
-				String html = htmlReport.generate();
-				Files.writeString(htmlreport.get(), html, StandardCharsets.UTF_8);
-			}
+			Statistics statistics = new Statistics(validator.getRepository());
+			writeReports(errors, statistics);
+		
 		} catch (IOException e) {
 			LOG.error(e.getMessage());
 			System.exit(-1);

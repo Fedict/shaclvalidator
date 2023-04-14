@@ -67,6 +67,7 @@ public class TemplateReport {
 	private final URL data;
 
 	private final Map<String, Object> context = new HashMap<>();
+	private final Statistics stats;
 
 	/**
 	 * Find first value for a given ID (subject) and property (predicate)
@@ -86,7 +87,7 @@ public class TemplateReport {
 	 * 
 	 * @throws IOException 
 	 */
-	public void prepare() throws IOException {
+	public void prepareValidation() throws IOException {
 		Value na = Values.literal("n/a");
 		model.setNamespace(SHACL.NS);
 
@@ -124,6 +125,19 @@ public class TemplateReport {
 		context.put("errors", errors);
 		context.put("warnings", warnings);
 	}
+	
+	public void prepareStatistics(boolean classes, boolean properties) {
+		if (classes) {
+			Map<IRI, Long> countClasses = stats.countClasses();
+			LOG.info("Classes: {}", countClasses.size());
+			context.put("classes", countClasses);
+		}
+		if (properties) {
+			Map<IRI, Long> countProperties = stats.countProperties();
+			LOG.info("Properties: {}", countProperties.size());
+			context.put("properties", countProperties);
+		}
+	}
 
 	/**
 	 * Merge the data and the template into a report
@@ -144,10 +158,10 @@ public class TemplateReport {
 	 * @param data location of the data
 	 * @param shacl location of the SHACL file
 	 */
-	public TemplateReport(Model model, URL data, URL shacl) {
+	public TemplateReport(Model model, URL data, URL shacl, Statistics stats) {
 		this.model = model;
 		this.data = data;
 		this.shacl = shacl;
-
+		this.stats = stats;
 	}
 }

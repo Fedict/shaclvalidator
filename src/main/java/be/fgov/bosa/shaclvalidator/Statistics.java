@@ -41,6 +41,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.ORG;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.model.vocabulary.ROV;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.VCARD4;
@@ -60,7 +61,6 @@ public class Statistics {
 
 	private final List<Namespace> namespaces = List.of(DCAT.NS, DCTERMS.NS, FOAF.NS, ORG.NS, RDF.NS, ROV.NS, SKOS.NS, VCARD4.NS);
 
-	private final IRI ShaclContext = Values.iri("http://rdf4j.org/schema/rdf4j#SHACLShapeGraph");
 	private final Repository repo;
 
 	/**
@@ -72,7 +72,7 @@ public class Statistics {
 		try (RepositoryConnection conn = repo.getConnection()) {
 			return conn.getStatements(null, RDF.TYPE, null)
 				.stream()
-				.filter(s -> !s.getContext().equals(ShaclContext))
+				.filter(s -> s.getContext() == null || !s.getContext().equals(RDF4J.SHACL_SHAPE_GRAPH))
 				.map(Statement::getObject)
 				.map(IRI.class::cast)
 				.collect(
@@ -89,7 +89,7 @@ public class Statistics {
 		try (RepositoryConnection conn = repo.getConnection()) {
 			return conn.getStatements(null, null, null)
 				.stream()
-				.filter(s -> !s.getContext().equals(ShaclContext))
+				.filter(s -> s.getContext() == null || !s.getContext().equals(RDF4J.SHACL_SHAPE_GRAPH))
 				.map(Statement::getPredicate)
 				.map(IRI.class::cast)
 				.collect(
@@ -110,7 +110,7 @@ public class Statistics {
 				.collect(Collectors.toMap(Function.identity(), p ->
 					conn.getStatements(null, p, null)
 						.stream()
-						.filter(s -> !s.getContext().equals(ShaclContext))
+						.filter(s -> s.getContext() == null || !s.getContext().equals(RDF4J.SHACL_SHAPE_GRAPH))
 						.map(Statement::getObject)
 						.collect(
 							Collectors.groupingBy(Function.identity(), Collectors.counting()))));

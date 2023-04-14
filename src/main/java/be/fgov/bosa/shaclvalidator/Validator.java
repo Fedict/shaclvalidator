@@ -31,6 +31,7 @@ import java.net.URL;
 import java.util.Optional;
 
 import org.eclipse.rdf4j.common.exception.ValidationException;
+import org.eclipse.rdf4j.common.transaction.IsolationLevels;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
@@ -64,12 +65,12 @@ public class Validator implements AutoCloseable {
 	 */
 	private void loadShacl(URL location) throws IOException {
 		LOG.info("Loading shacl from {}", location.toString());
-		try (RepositoryConnection connection = repo.getConnection();
+		try (RepositoryConnection conn = repo.getConnection();
 			BufferedInputStream bisShacl = new BufferedInputStream(location.openStream())) {
 
-			connection.begin();
-			connection.add(bisShacl, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
-			connection.commit();
+			conn.begin();
+			conn.add(bisShacl, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+			conn.commit();
 		}
 	}
 
@@ -83,14 +84,16 @@ public class Validator implements AutoCloseable {
 	 */
 	private Model validate(URL location, Optional<String> fmt) throws IOException {
 		LOG.info("Loading data from {}", location.toString());
-		try (RepositoryConnection connection = repo.getConnection();
+		try (RepositoryConnection conn = repo.getConnection();
 			BufferedInputStream bisData = new BufferedInputStream(location.openStream())) {
-
+			
 			Optional<RDFFormat> rdf = fmt.isPresent() 
 				? Rio.getParserFormatForMIMEType(fmt.get())
 				: Rio.getParserFormatForFileName(location.getFile());
 
-			connection.add(bisData, rdf.orElse(RDFFormat.RDFXML));
+			conn.begin(IsolationLevels.NONE, ShaclSail.TransactionSettings.ValidationApproach.Bulk);
+			conn.add(bisData, rdf.orElse(RDFFormat.RDFXML));
+			conn.commit();
 		} catch (RepositoryException exception) {
 			Throwable cause = exception.getCause();
 			if (cause instanceof ValidationException validationException) {

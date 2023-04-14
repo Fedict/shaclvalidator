@@ -65,13 +65,13 @@ public class Main implements Runnable {
     @Option(names = "--report", description = "Write report to this file(s), format can be HTML, TTL or MD")
     Path[] reports;
 
-    @Option(names = "--statsClasses", description = "Count number of classes")
-    boolean statClasses;
+    @Option(names = "--countClasses", description = "Count number of classes")
+    boolean countClasses;
 
-    @Option(names = "--statsProperties", description = "Count number of predicates/properties")
-    boolean statProperties;
+    @Option(names = "--countProperties", description = "Count number of predicates/properties")
+    boolean countProperties;
 
-    @Option(names = "--statsValues", description = "Count number of values for one or more properties")
+    @Option(names = "--countValues", description = "Count number of values for one or more properties")
     String[] statValues;
 
 	/**
@@ -92,8 +92,9 @@ public class Main implements Runnable {
 			String ext = FilenameUtils.getExtension(report.toString());
 	
 			if (ext.equals("md") || ext.equals("html")) {
-				TemplateReport tmpl = new TemplateReport(errors, shacl, data);
-				tmpl.prepare();
+				TemplateReport tmpl = new TemplateReport(errors, shacl, data, stats);
+				tmpl.prepareValidation();
+				tmpl.prepareStatistics(countClasses, countProperties);
 				
 				try(Writer w = Files.newBufferedWriter(report)) {
 					tmpl.merge(ext, w);					
@@ -119,13 +120,11 @@ public class Main implements Runnable {
 	@Override
     public void run() {
 		try {
-			
 			Validator validator = new Validator();
 			Model errors = validator.validate(shacl, data, format);
-
 			Statistics statistics = new Statistics(validator.getRepository());
+
 			writeReports(errors, statistics);
-		
 		} catch (IOException e) {
 			LOG.error(e.getMessage());
 			System.exit(-1);

@@ -31,6 +31,23 @@ table {
 			<tr><th>Data file</th><td>{{ data }}</td></tr>
 		</table>
 	</section>
+	
+	<section class="info">
+		<h2>Statistics</h2>
+		<h3>Classes</h3>
+		<table>
+			{% for entry in classes.entrySet() %}
+			<tr><th>{{ entry.key }}</th><td>{{ entry.value }}</td></tr>
+			{% endfor %}
+		</table>
+		<h3>Properties</h3>
+		<table>
+			{% for entry in properties.entrySet() %}
+			<tr><th>{{ entry.key }}</th><td>{{ entry.value }}</td></tr>
+			{% endfor %}
+		</table>
+	</section>
+
 	<section class="error">
 		<h2>Errors</h2>
 		{% for entry in errors.values() %}

@@ -31,7 +31,33 @@ table {
 			<tr><th>Data file</th><td>{{ data }}</td></tr>
 		</table>
 	</section>
-	
+
+	<section class="error">
+		<h2>Errors</h2>
+		{% for entry in errors.values() %}
+		<pre>{{ entry.shape }}</pre>
+		<table>
+			<tr><th>Focus node</th><th>Constraint</th><th>Value</th></tr>
+			{% for issue in entry.issues %}
+				<tr><td>{{ issue.node }}</td><td>{{ issue.component }}</td><td>{{ issue.value }}</td></tr>
+			{% endfor %}
+		</table>
+		{% endfor %}
+	</section>
+
+	<section class="warning">
+		<h2>Warnings</h2>
+		{% for entry in warnings.values() %}
+		<pre>{{ entry.shape }}</pre>
+		<table>
+			<tr><th>Focus node</th><th>Constraint</th><th>Value</th></tr>
+			{% for issue in entry.issues %}
+				<tr><td>{{ issue.node }}</td><td>{{ issue.component }}</td><td>{{ issue.value }}</td></tr>
+			{% endfor %}
+		</table>
+		{% endfor %}
+	</section>
+
 	<section class="info">
 		<h2>Statistics</h2>
 		<h3>Classes</h3>
@@ -46,28 +72,12 @@ table {
 			<tr><th>{{ entry.key }}</th><td>{{ entry.value }}</td></tr>
 			{% endfor %}
 		</table>
-	</section>
-
-	<section class="error">
-		<h2>Errors</h2>
-		{% for entry in errors.values() %}
-		<pre>{{ entry.shape }}</pre>
+		<h3>Values</h3>
+		{% for entry in values.entrySet() %}
+		<h3>{{ entry.key }}</h3>
 		<table>
-			<tr><th>Focus node</th><th>Constraint</th><th>Value</th></tr>
-			{% for issue in entry.issues %}
-				<tr><td>{{ issue.node }}</td><td>{{ issue.component }}</td><td>{{ issue.value }}</td></tr>
-			{% endfor %}
-		</table>
-		{% endfor %}
-	</section>
-	<section class="warning">
-		<h2>Warnings</h2>
-		{% for entry in warnings.values() %}
-		<pre>{{ entry.shape }}</pre>
-		<table>
-			<tr><th>Focus node</th><th>Constraint</th><th>Value</th></tr>
-			{% for issue in entry.issues %}
-				<tr><td>{{ issue.node }}</td><td>{{ issue.component }}</td><td>{{ issue.value }}</td></tr>
+			{% for e in entry.value.entrySet() %}
+			<tr><th>{{ e.key }}</th><td>{{ e.value }}</td></tr>
 			{% endfor %}
 		</table>
 		{% endfor %}

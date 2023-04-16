@@ -72,7 +72,7 @@ public class Main implements Runnable {
     boolean countProperties;
 
     @Option(names = "--countValues", description = "Count number of values for one or more properties")
-    String[] statValues;
+    String[] countValues;
 
 	/**
 	 * Write errors and statistics, if any
@@ -94,7 +94,7 @@ public class Main implements Runnable {
 			if (ext.equals("md") || ext.equals("html")) {
 				TemplateReport tmpl = new TemplateReport(errors, shacl, data, stats);
 				tmpl.prepareValidation();
-				tmpl.prepareStatistics(countClasses, countProperties);
+				tmpl.prepareStatistics(countClasses, countProperties, countValues);
 				
 				try(Writer w = Files.newBufferedWriter(report)) {
 					tmpl.merge(ext, w);					

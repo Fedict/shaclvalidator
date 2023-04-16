@@ -83,7 +83,7 @@ public class TemplateReport {
 					
 
 	/**
-	 * Prepare the report
+	 * Prepare the validation report
 	 * 
 	 * @throws IOException 
 	 */
@@ -125,8 +125,15 @@ public class TemplateReport {
 		context.put("errors", errors);
 		context.put("warnings", warnings);
 	}
-	
-	public void prepareStatistics(boolean classes, boolean properties) {
+
+	/**
+	 * Prepare the statistics
+	 * 
+	 * @param classes gather statistics on classes
+	 * @param properties gather statistics on properties
+	 * @param values
+	 */
+	public void prepareStatistics(boolean classes, boolean properties, String[] values) {
 		if (classes) {
 			Map<IRI, Long> countClasses = stats.countClasses();
 			LOG.info("Classes: {}", countClasses.size());
@@ -136,6 +143,11 @@ public class TemplateReport {
 			Map<IRI, Long> countProperties = stats.countProperties();
 			LOG.info("Properties: {}", countProperties.size());
 			context.put("properties", countProperties);
+		}
+		if (values.length > 0) {
+			Map<IRI, Map<Value, Long>> countValues = stats.countValues(values);
+			LOG.info("Values: {}", countValues.size());
+			context.put("values", countValues);
 		}
 	}
 

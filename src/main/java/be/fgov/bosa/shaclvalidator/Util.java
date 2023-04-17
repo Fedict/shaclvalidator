@@ -59,7 +59,7 @@ public class Util {
 	 */
 	public static String prefixedIRI(IRI iri) {
 		String ns = iri.getNamespace();
-		for (Namespace n: Validator.NS) {
+		for (Namespace n: Util.NS) {
 			if (n.getName().equals(ns)) {
 				return n.getPrefix() + ":" + iri.getLocalName();
 			}

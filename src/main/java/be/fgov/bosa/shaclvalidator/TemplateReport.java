@@ -90,7 +90,7 @@ public class TemplateReport {
 	 */
 	public void prepareValidation() throws IOException {
 		Value na = Values.literal("n/a");
-		for (Namespace ns: Validator.NS) {
+		for (Namespace ns: Util.NS) {
 			model.setNamespace(ns);
 		}
 

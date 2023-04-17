@@ -122,7 +122,7 @@ public class Statistics {
 			if (predicate.startsWith("http://") || predicate.startsWith("https://") ) {
 				iris.add(Values.iri(predicate));
 			} else {
-				iris.add(Values.iri(Validator.NS, predicate));
+				iris.add(Values.iri(Util.NS, predicate));
 			}
 		}
 		return countValues(iris);

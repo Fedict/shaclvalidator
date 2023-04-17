@@ -23,19 +23,48 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fgov.bosa.shaclvalidator.dao;
+package be.fgov.bosa.shaclvalidator;
 
 import java.util.List;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.vocabulary.DCAT;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.FOAF;
+import org.eclipse.rdf4j.model.vocabulary.ORG;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.ROV;
+import org.eclipse.rdf4j.model.vocabulary.SKOS;
+import org.eclipse.rdf4j.model.vocabulary.VCARD4;
+
 
 /**
- *
- * @author Bart.Hanssens
+ * Util class
+ * 
+ * @author Bart Hanssens
  */
-public record ValidationInfo(String ID, String shape, String message, List<ValidationIssue> issues) 
-	implements Comparable<ValidationInfo> {
+public class Util {
 
-	@Override
-	public int compareTo(ValidationInfo o) {
-		return this.message.compareTo(o.message());
+	public final static List<Namespace> NS = List.of(DCAT.NS, DCTERMS.NS, FOAF.NS, ORG.NS, RDF.NS, RDFS.NS,
+													ROV.NS, SKOS.NS, VCARD4.NS, 
+													new SimpleNamespace("schema", "https://schema.org/"));
+
+	/**
+	 * Return a prefixed version of the IRI
+	 * 
+	 * @param iri
+	 * @return prefixed version, or full IRI if no prefix was found
+	 */
+	public static String prefixedIRI(IRI iri) {
+		String ns = iri.getNamespace();
+		for (Namespace n: Validator.NS) {
+			if (n.getName().equals(ns)) {
+				return n.getPrefix() + ":" + iri.getLocalName();
+			}
+		}
+		return iri.stringValue();
 	}
+		
 }

@@ -25,6 +25,7 @@
  */
 package be.fgov.bosa.shaclvalidator;
 
+import be.fgov.bosa.shaclvalidator.dao.CountedThing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,23 +33,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
-import org.eclipse.rdf4j.model.vocabulary.DCAT;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
-import org.eclipse.rdf4j.model.vocabulary.FOAF;
-import org.eclipse.rdf4j.model.vocabulary.ORG;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
-import org.eclipse.rdf4j.model.vocabulary.ROV;
-import org.eclipse.rdf4j.model.vocabulary.SKOS;
-import org.eclipse.rdf4j.model.vocabulary.VCARD4;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -57,9 +48,6 @@ import org.slf4j.LoggerFactory;
  * @author Bart Hanssens
  */
 public class Statistics {
-	private final static Logger LOG = LoggerFactory.getLogger(Statistics.class);
-
-	private final List<Namespace> namespaces = List.of(DCAT.NS, DCTERMS.NS, FOAF.NS, ORG.NS, RDF.NS, ROV.NS, SKOS.NS, VCARD4.NS);
 
 	private final Repository repo;
 
@@ -68,15 +56,17 @@ public class Statistics {
 	 * 
 	 * @return 
 	 */
-	public Map<IRI,Long> countClasses() {
+	public List<CountedThing> countClasses() {
 		try (RepositoryConnection conn = repo.getConnection()) {
 			return conn.getStatements(null, RDF.TYPE, null)
 				.stream()
 				.filter(s -> s.getContext() == null || !s.getContext().equals(RDF4J.SHACL_SHAPE_GRAPH))
 				.map(Statement::getObject)
-				.map(IRI.class::cast)
-				.collect(
-					Collectors.groupingBy(Function.identity(), Collectors.counting()));
+				.collect(Collectors.groupingBy(IRI.class::cast, Collectors.counting()))
+				.entrySet()
+				.stream()
+				.map(e -> new CountedThing(Util.prefixedIRI(e.getKey()), e.getValue()))
+				.collect(Collectors.toList());
 		}
 	}
 
@@ -85,15 +75,17 @@ public class Statistics {
 	 * 
 	 * @return 
 	 */
-	public Map<IRI,Long> countProperties() {
+	public List<CountedThing> countProperties() {
 		try (RepositoryConnection conn = repo.getConnection()) {
 			return conn.getStatements(null, null, null)
 				.stream()
 				.filter(s -> s.getContext() == null || !s.getContext().equals(RDF4J.SHACL_SHAPE_GRAPH))
 				.map(Statement::getPredicate)
-				.map(IRI.class::cast)
-				.collect(
-					Collectors.groupingBy(Function.identity(), Collectors.counting()));
+				.collect(Collectors.groupingBy(IRI.class::cast, Collectors.counting()))
+				.entrySet()
+				.stream()
+				.map(e -> new CountedThing(Util.prefixedIRI(e.getKey()), e.getValue()))
+				.collect(Collectors.toList());
 		}
 	}
 
@@ -130,7 +122,7 @@ public class Statistics {
 			if (predicate.startsWith("http://") || predicate.startsWith("https://") ) {
 				iris.add(Values.iri(predicate));
 			} else {
-				iris.add(Values.iri(namespaces, predicate));
+				iris.add(Values.iri(Validator.NS, predicate));
 			}
 		}
 		return countValues(iris);

@@ -92,7 +92,7 @@ public class Main implements Runnable {
 			String ext = FilenameUtils.getExtension(report.toString());
 	
 			if (ext.equals("md") || ext.equals("html")) {
-				TemplateReport tmpl = new TemplateReport(errors, shacl, data, stats);
+				TemplateReport tmpl = new TemplateReport(errors, data, shacl, stats);
 				tmpl.prepareValidation();
 				tmpl.prepareStatistics(countClasses, countProperties, countValues);
 				

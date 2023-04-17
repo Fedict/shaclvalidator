@@ -25,17 +25,16 @@
  */
 package be.fgov.bosa.shaclvalidator.dao;
 
-import java.util.List;
-
 /**
  *
  * @author Bart.Hanssens
  */
-public record ValidationInfo(String ID, String shape, String message, List<ValidationIssue> issues) 
-	implements Comparable<ValidationInfo> {
+public record CountedThing(String name, long number) 
+	implements Comparable<CountedThing> {
 
 	@Override
-	public int compareTo(ValidationInfo o) {
-		return this.message.compareTo(o.message());
+	public int compareTo(CountedThing o) {
+		int cmpno = Long.compare(o.number, this.number);
+		return (cmpno != 0) ? cmpno : this.name.compareTo(o.name);
 	}
 }

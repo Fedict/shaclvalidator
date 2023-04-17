@@ -25,6 +25,7 @@
  */
 package be.fgov.bosa.shaclvalidator;
 
+import be.fgov.bosa.shaclvalidator.dao.CountedThing;
 import be.fgov.bosa.shaclvalidator.dao.ValidationInfo;
 import be.fgov.bosa.shaclvalidator.dao.ValidationIssue;
 import io.pebbletemplates.pebble.PebbleEngine;
@@ -34,15 +35,16 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
@@ -80,8 +82,7 @@ public class TemplateReport {
 	private Optional<Value> findFirst(Model m, Resource id, IRI property) {
 		return m.filter(id, property, null).objects().stream().findFirst();
 	}
-					
-
+	
 	/**
 	 * Prepare the validation report
 	 * 
@@ -89,19 +90,21 @@ public class TemplateReport {
 	 */
 	public void prepareValidation() throws IOException {
 		Value na = Values.literal("n/a");
-		model.setNamespace(SHACL.NS);
+		for (Namespace ns: Validator.NS) {
+			model.setNamespace(ns);
+		}
 
-		Map<String,ValidationInfo> errors = new TreeMap<>();
-		Map<String,ValidationInfo> warnings = new TreeMap<>();
+		List<ValidationInfo> errors = new ArrayList<>();
+		List<ValidationInfo> warnings = new ArrayList<>();
 		// IDs of shapes being violated
 		Set<Value> shapeIDs = model.filter(null, SHACL.SOURCE_SHAPE, null).objects();
 		LOG.info("Shapes violated: {}", shapeIDs.size());
 		
 		for (Value shapeID: shapeIDs) {
-			Model m = model.filter((Resource) shapeID, null, null);
+			Model shape = model.filter((Resource) shapeID, null, null);
 			StringWriter sw = new StringWriter();
-			Rio.write(m, sw, RDFFormat.TURTLE);
-			String shape = sw.toString();
+			Rio.write(shape, sw, RDFFormat.TURTLE);
+			String str = sw.toString();
 			
 			Set<Resource> violationIDs = model.filter(null, SHACL.SOURCE_SHAPE, shapeID).subjects();
 			List<ValidationIssue> issues = new ArrayList<>(violationIDs.size());
@@ -116,12 +119,18 @@ public class TemplateReport {
 				);
 				issues.add(issue);
 			}
-			errors.put(shapeID.stringValue(), new ValidationInfo(shape, issues));
+			// all validation issues are actually on same component
+			String component = issues.get(0).component();
+
+			IRI path = (IRI) findFirst(shape, (Resource) shapeID, SHACL.PATH).get();
+			String msg = (path != null) ? Util.prefixedIRI(path) + " " + component : component;
+
+			errors.add(new ValidationInfo(shapeID.stringValue(), str, msg, issues));
 		}
 
 		context.put("data", data.toString());
 		context.put("shacl", shacl.toString());
-		context.put("timestamp", LocalDateTime.now().toString());
+		context.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		context.put("errors", errors);
 		context.put("warnings", warnings);
 	}
@@ -135,12 +144,12 @@ public class TemplateReport {
 	 */
 	public void prepareStatistics(boolean classes, boolean properties, String[] values) {
 		if (classes) {
-			Map<IRI, Long> countClasses = stats.countClasses();
+			List<CountedThing> countClasses = stats.countClasses();
 			LOG.info("Classes: {}", countClasses.size());
 			context.put("classes", countClasses);
 		}
 		if (properties) {
-			Map<IRI, Long> countProperties = stats.countProperties();
+			List<CountedThing> countProperties = stats.countProperties();
 			LOG.info("Properties: {}", countProperties.size());
 			context.put("properties", countProperties);
 		}
@@ -169,6 +178,7 @@ public class TemplateReport {
 	 * @param model validation report
 	 * @param data location of the data
 	 * @param shacl location of the SHACL file
+	 * @param stats statistics
 	 */
 	public TemplateReport(Model model, URL data, URL shacl, Statistics stats) {
 		this.model = model;

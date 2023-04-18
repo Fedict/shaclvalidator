@@ -154,7 +154,7 @@ public class TemplateReport {
 			context.put("properties", countProperties);
 		}
 		if (values.length > 0) {
-			Map<IRI, Map<Value, Long>> countValues = stats.countValues(values);
+			Map<String, List<CountedThing>> countValues = stats.countValues(values);
 			LOG.info("Values: {}", countValues.size());
 			context.put("values", countValues);
 		}

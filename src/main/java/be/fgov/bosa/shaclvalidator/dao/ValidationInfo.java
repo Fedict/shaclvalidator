@@ -28,8 +28,9 @@ package be.fgov.bosa.shaclvalidator.dao;
 import java.util.List;
 
 /**
- *
- * @author Bart.Hanssens
+ * Helper record to collect validation results
+ * 
+ * @author Bart Hanssens
  */
 public record ValidationInfo(String ID, String shape, String message, List<ValidationIssue> issues) 
 	implements Comparable<ValidationInfo> {

@@ -29,7 +29,6 @@ import be.fgov.bosa.shaclvalidator.dao.CountedThing;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.rdf4j.model.IRI;
@@ -95,17 +94,21 @@ public class Statistics {
 	 * @param predicates list of predicates
 	 * @return 
 	 */
-	public Map<IRI,Map<Value,Long>> countValues(List<IRI> predicates) {
+	public Map<String,List<CountedThing>> countValues(List<IRI> predicates) {
 		try (RepositoryConnection conn = repo.getConnection()) {
 			return predicates
 				.stream()
-				.collect(Collectors.toMap(Function.identity(), p ->
+				.collect(Collectors.toMap(Util::prefixedIRI, p ->
 					conn.getStatements(null, p, null)
 						.stream()
 						.filter(s -> s.getContext() == null || !s.getContext().equals(RDF4J.SHACL_SHAPE_GRAPH))
 						.map(Statement::getObject)
 						.collect(
-							Collectors.groupingBy(Function.identity(), Collectors.counting()))));
+							Collectors.groupingBy(Value::stringValue, Collectors.counting()))
+						.entrySet()
+						.stream()
+						.map(e -> new CountedThing(e.getKey(), e.getValue()))
+						.collect(Collectors.toList())));
 		}
 	}
 	
@@ -115,7 +118,7 @@ public class Statistics {
 	 * @param predicates list of predicates
 	 * @return 
 	 */
-	public Map<IRI,Map<Value,Long>> countValues(String[] predicates) {
+	public Map<String,List<CountedThing>> countValues(String[] predicates) {
 		List<IRI> iris = new ArrayList<>(predicates.length);
 		
 		for(String predicate: predicates) {

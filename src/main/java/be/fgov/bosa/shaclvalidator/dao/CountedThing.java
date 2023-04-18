@@ -26,14 +26,16 @@
 package be.fgov.bosa.shaclvalidator.dao;
 
 /**
- *
- * @author Bart.Hanssens
+ * Helper record to collect statistics
+ * 
+ * @author Bart Hanssens
  */
 public record CountedThing(String name, long number) 
 	implements Comparable<CountedThing> {
 
 	@Override
 	public int compareTo(CountedThing o) {
+		// order by highest number first, and then by name
 		int cmpno = Long.compare(o.number, this.number);
 		return (cmpno != 0) ? cmpno : this.name.compareTo(o.name);
 	}

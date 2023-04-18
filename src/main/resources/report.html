@@ -108,11 +108,11 @@ table.info th {
 		{% endif %}
 		{% if values is not empty %}
 		<h3>Values</h3>
-		{% for entry in values %}
-		<h3>{{ entry.key }}</h3>
+		{% for v in values %}
+		<h3>{{ v.key }}</h3>
 		<table class="info side">
-			{% for e in entry.value %}
-			<tr><th>{{ e.key }}</th><td>{{ e.value }}</td></tr>
+			{% for entry in v.value|sort %}
+			<tr><th>{{ entry.name }}</th><td>{{ entry.number }}</td></tr>
 			{% endfor %}
 		</table>
 		{% endfor %}

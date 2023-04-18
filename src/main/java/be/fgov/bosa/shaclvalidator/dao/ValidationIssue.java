@@ -26,7 +26,8 @@
 package be.fgov.bosa.shaclvalidator.dao;
 
 /**
- *
- * @author Bart.Hanssens
+ * Helper record for individual validation issues
+ * 
+ * @author Bart Hanssens
  */
 public record ValidationIssue(String node, String component, String value) { }

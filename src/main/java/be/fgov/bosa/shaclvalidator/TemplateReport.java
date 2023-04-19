@@ -64,12 +64,7 @@ public class TemplateReport {
 
 	private final PebbleEngine engine = new PebbleEngine.Builder().build();
 
-	private final Model model;
-	private final URL shacl;
-	private final URL data;
-
 	private final Map<String, Object> context = new HashMap<>();
-	private final Statistics stats;
 
 	/**
 	 * Find first value for a given ID (subject) and property (predicate)
@@ -86,63 +81,83 @@ public class TemplateReport {
 	/**
 	 * Prepare the validation report
 	 * 
+	 * @param issues validation issues model
+	 * @param data location of the data
+	 * @param shacl location of the SHACL rules
 	 * @throws IOException 
 	 */
-	public void prepareValidation() throws IOException {
+	public void prepareValidation(Model issues, URL data, URL shacl) throws IOException {
 		Value na = Values.literal("n/a");
 		for (Namespace ns: Util.NS) {
-			model.setNamespace(ns);
+			issues.setNamespace(ns);
 		}
 
 		List<ValidationInfo> errors = new ArrayList<>();
 		List<ValidationInfo> warnings = new ArrayList<>();
+		List<ValidationInfo> infos = new ArrayList<>();
+
 		// IDs of shapes being violated
-		Set<Value> shapeIDs = model.filter(null, SHACL.SOURCE_SHAPE, null).objects();
-		LOG.info("Shapes violated: {}", shapeIDs.size());
+		Set<Value> shapeIDs = issues.filter(null, SHACL.SOURCE_SHAPE, null).objects();
 		
 		for (Value shapeID: shapeIDs) {
-			Model shape = model.filter((Resource) shapeID, null, null);
+			Model shape = issues.filter((Resource) shapeID, null, null);
 			StringWriter sw = new StringWriter();
 			Rio.write(shape, sw, RDFFormat.TURTLE);
 			String str = sw.toString();
 			
-			Set<Resource> violationIDs = model.filter(null, SHACL.SOURCE_SHAPE, shapeID).subjects();
-			List<ValidationIssue> issues = new ArrayList<>(violationIDs.size());
+			Set<Resource> violationIDs = issues.filter(null, SHACL.SOURCE_SHAPE, shapeID).subjects();
+			List<ValidationIssue> violations = new ArrayList<>(violationIDs.size());
 			
 			for(Resource violationID: violationIDs) {
-				Model violation = model.filter(violationID, null, null);
+				Model violation = issues.filter(violationID, null, null);
 				
 				ValidationIssue issue = new ValidationIssue(
 					findFirst(violation, violationID, SHACL.FOCUS_NODE).get().stringValue(),
 					((IRI)findFirst(violation, violationID, SHACL.SOURCE_CONSTRAINT_COMPONENT).get()).getLocalName(),
 					findFirst(violation, violationID, SHACL.VALUE).orElse(na).stringValue()
 				);
-				issues.add(issue);
+				violations.add(issue);
 			}
 			// all validation issues are actually on same component
-			String component = issues.get(0).component();
+			String component = violations.get(0).component();
 
 			IRI path = (IRI) findFirst(shape, (Resource) shapeID, SHACL.PATH).get();
 			String msg = (path != null) ? Util.prefixedIRI(path) + " " + component : component;
 
-			errors.add(new ValidationInfo(shapeID.stringValue(), str, msg, issues));
+			ValidationInfo result = new ValidationInfo(shapeID.stringValue(), str, msg, violations);
+			// check severity, default is violation
+			IRI severity = (IRI) findFirst(shape, (Resource) shapeID, SHACL.SEVERITY_PROP).orElse(SHACL.VIOLATION);
+
+			if (severity.equals(SHACL.VIOLATION)) {
+				errors.add(result);
+			} else if (severity.equals(SHACL.WARNING)) {
+				warnings.add(result);
+			} else if (severity.equals(SHACL.INFO)) {
+				infos.add(result);
+			}	
 		}
+
+		LOG.info("Shapes with errors: {}", errors.size());
+		LOG.info("Shapes with warnings: {}", warnings.size());
+		LOG.info("Shapes with recommendations: {}", infos.size());
 
 		context.put("data", data.toString());
 		context.put("shacl", shacl.toString());
 		context.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		context.put("errors", errors);
 		context.put("warnings", warnings);
+		context.put("infos", infos);
 	}
 
 	/**
 	 * Prepare the statistics
 	 * 
+	 * @param stats
 	 * @param classes gather statistics on classes
 	 * @param properties gather statistics on properties
-	 * @param values
+	 * @param values gather statistics on property values
 	 */
-	public void prepareStatistics(boolean classes, boolean properties, String[] values) {
+	public void prepareStatistics(Statistics stats, boolean classes, boolean properties, String[] values) {
 		if (classes) {
 			List<CountedThing> countClasses = stats.countClasses();
 			LOG.info("Classes: {}", countClasses.size());
@@ -155,7 +170,7 @@ public class TemplateReport {
 		}
 		if (values.length > 0) {
 			Map<String, List<CountedThing>> countValues = stats.countValues(values);
-			LOG.info("Values: {}", countValues.size());
+			LOG.info("Value details: {}", countValues.size());
 			context.put("values", countValues);
 		}
 	}
@@ -172,18 +187,4 @@ public class TemplateReport {
 		template.evaluate(writer, context);
 	}
 
-	/**
-	 * Constructor
-	 * 
-	 * @param model validation report
-	 * @param data location of the data
-	 * @param shacl location of the SHACL file
-	 * @param stats statistics
-	 */
-	public TemplateReport(Model model, URL data, URL shacl, Statistics stats) {
-		this.model = model;
-		this.data = data;
-		this.shacl = shacl;
-		this.stats = stats;
-	}
 }

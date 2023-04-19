@@ -87,15 +87,15 @@ public class Main implements Runnable {
 			return;
 		}
 
+		TemplateReport tmpl = new TemplateReport();
+		tmpl.prepareValidation(errors, data, shacl);
+		tmpl.prepareStatistics(stats, countClasses, countProperties, countValues);
+
 		for(Path report: reports) {
 			LOG.info("Writing report to {}", report);
 			String ext = FilenameUtils.getExtension(report.toString());
 	
 			if (ext.equals("md") || ext.equals("html")) {
-				TemplateReport tmpl = new TemplateReport(errors, data, shacl, stats);
-				tmpl.prepareValidation();
-				tmpl.prepareStatistics(countClasses, countProperties, countValues);
-				
 				try(Writer w = Files.newBufferedWriter(report)) {
 					tmpl.merge(ext, w);					
 				}

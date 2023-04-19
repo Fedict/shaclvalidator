@@ -54,8 +54,9 @@ table.info th {
 		</table>
 	</section>
 
+	<hr/>
 	<section class="error">
-		<h2>Errors</h2>
+		<h2>Errors: : {{ errors|length }}</h2>
 		{% for error in errors | sort %}
 		<section>
 			<details>
@@ -73,14 +74,14 @@ table.info th {
 	</section>
 
 	<section class="warning">
-		<h2>Warnings</h2>
+		<h2>Warnings: {{ warnings|length }}</h2>
 		{% for warning in warnings %}
 		<details>
 			<summary>{{ warning.message }}</summary>
 			<pre>{{ warning.shape }}</pre>
 		</details>
 		<table class="warning">
-			<tr><th>Focus node</th><th>Constraint</th><th>Value</th></tr>
+			<tr><th>Focus node</th><th>Value</th></tr>
 			{% for issue in warning.issues %}
 			<tr><td>{{ issue.node }}</td><td>{{ issue.value }}</td></tr>
 			{% endfor %}
@@ -89,10 +90,28 @@ table.info th {
 	</section>
 
 	<section class="info">
+		<h2>Recommendations: {{ infos|length }}</h2>
+		{% for info in infos %}
+		<details>
+			<summary>{{ info.message }}</summary>
+			<pre>{{ info.shape }}</pre>
+		</details>
+		<table class="info">
+			<tr><th>Focus node</th><th>Value</th></tr>
+			{% for issue in info.issues %}
+			<tr><td>{{ issue.node }}</td><td>{{ issue.value }}</td></tr>
+			{% endfor %}
+		</table>
+		{% endfor %}
+	</section>
+	<hr/>
+
+	<section class="info">
 		<h2>Statistics</h2>
 		{% if classes is not empty %}
 		<h3>Classes</h3>
 		<table class="info side">
+			<tr><th>Name</th><th>Count</th></tr>
 			{% for entry in classes|sort %}
 			<tr><th>{{ entry.name }}</th><td>{{ entry.number }}</td></tr>
 			{% endfor %}
@@ -101,6 +120,7 @@ table.info th {
 		{% if properties is not empty %}
 		<h3>Properties</h3>
 		<table class="info side">
+			<tr><th>Name</th><th>Count</th></tr>
 			{% for entry in properties|sort %}
 			<tr><th>{{ entry.name }}</th><td>{{ entry.number }}</td></tr>
 			{% endfor %}
@@ -109,8 +129,9 @@ table.info th {
 		{% if values is not empty %}
 		<h3>Values</h3>
 		{% for v in values %}
-		<h3>{{ v.key }}</h3>
+		<h4>{{ v.key }}</h4>
 		<table class="info side">
+			<tr><th>Name</th><th>Count</th></tr>
 			{% for entry in v.value|sort %}
 			<tr><th>{{ entry.name }}</th><td>{{ entry.number }}</td></tr>
 			{% endfor %}
@@ -120,4 +141,3 @@ table.info th {
 	</section>
 </body>
 </html>
-

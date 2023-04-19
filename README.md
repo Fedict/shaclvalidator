@@ -25,4 +25,12 @@ java -jar --data=file:///C:\data\rdf.nt --shacl=https://example.com/shapes.shacl
 | --countProperties | Count different properties (predicates) in input data |
 | --countValues | Count different values for one or more properties (IRI or prefixed value) |
 
-The following prefixes are supported: dcat, dcterms, foaf, org, rdf, rdfs, rov, schema, skos, vcard
+The following prefixes are supported: dcat, dcterms, foaf, org, rdf, rdfs, rov, schema, skos, vcard.
+
+| Return codes | Description |
+|--------------|-------------|
+| -1           | Something went wrong when configuring or loading data |
+| 0            | No issues have been found, input data is fully in line with the SHACL rules |
+| 1            | Data has issues with severity level sh:Violation |
+| 2            | Data has issues with severity level sh:Warning |
+| 3            | Data has issues with severity level sh:Info | 

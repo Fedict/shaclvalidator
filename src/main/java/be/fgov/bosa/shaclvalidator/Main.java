@@ -31,6 +31,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import org.apache.commons.io.FilenameUtils;
 
 import org.eclipse.rdf4j.model.Model;
@@ -50,7 +51,7 @@ import picocli.CommandLine.Option;
  */
 @Command(name = "SHACL Validator", mixinStandardHelpOptions = true, version = "1.0",
          description = "Validates an RDF file using a (Turtle) SHACL file.")
-public class Main implements Runnable {
+public class Main implements Callable<Integer> {
 	private final static Logger LOG = LoggerFactory.getLogger(Main.class);
 
     @Option(names = "--data", description = "Data file location (URL or local file)", required = true)
@@ -79,17 +80,18 @@ public class Main implements Runnable {
 	 * 
 	 * @param errors
 	 * @param stats
-	 * @throws IOException 
+	 * @throws IOException
+	 * @return status code
 	 */
-	private void writeReports(Model errors, Statistics stats) throws IOException {
+	private int writeReports(Model errors, Statistics stats) throws IOException {
+		TemplateReport tmpl = new TemplateReport();
+		int retValue = tmpl.prepareValidation(errors, data, shacl);
+		tmpl.prepareStatistics(stats, countClasses, countProperties, countValues);
+
 		if (reports == null) {
 			Rio.write(errors, System.out, RDFFormat.TURTLE);
-			return;
+			return retValue;
 		}
-
-		TemplateReport tmpl = new TemplateReport();
-		tmpl.prepareValidation(errors, data, shacl);
-		tmpl.prepareStatistics(stats, countClasses, countProperties, countValues);
 
 		for(Path report: reports) {
 			LOG.info("Writing report to {}", report);
@@ -106,6 +108,20 @@ public class Main implements Runnable {
 				}
 			}
 		}
+		return retValue;
+	}
+
+	@Override
+    public Integer call() throws Exception {
+		try {
+			Validator validator = new Validator();
+			Model errors = validator.validate(shacl, data, format);
+			Statistics statistics = new Statistics(validator.getRepository());
+			return writeReports(errors, statistics);
+		} catch (IOException e) {
+			LOG.error(e.getMessage());
+			return -1;
+		}
 	}
 
 	/**
@@ -114,21 +130,7 @@ public class Main implements Runnable {
 	 * @param args
 	 */
     public static void main(String[] args) {
-        new CommandLine(new Main()).execute(args);
+        int exitCode = new CommandLine(new Main()).execute(args);
+		System.exit(exitCode);
     }
-
-	@Override
-    public void run() {
-		try {
-			Validator validator = new Validator();
-			Model errors = validator.validate(shacl, data, format);
-			Statistics statistics = new Statistics(validator.getRepository());
-
-			writeReports(errors, statistics);
-		} catch (IOException e) {
-			LOG.error(e.getMessage());
-			System.exit(-1);
-		}
-		LOG.info("OK");
-	}
 }

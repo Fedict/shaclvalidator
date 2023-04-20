@@ -78,19 +78,19 @@ public class Main implements Callable<Integer> {
 	/**
 	 * Write errors and statistics, if any
 	 * 
-	 * @param errors
+	 * @param results
 	 * @param stats
 	 * @throws IOException
 	 * @return status code
 	 */
-	private int writeReports(Model errors, Statistics stats) throws IOException {
+	private void writeReports(Model results, Statistics stats) throws IOException {
 		TemplateReport tmpl = new TemplateReport();
-		int retValue = tmpl.prepareValidation(errors, data, shacl);
+		tmpl.prepareValidation(results, data, shacl);
 		tmpl.prepareStatistics(stats, countClasses, countProperties, countValues);
 
 		if (reports == null) {
-			Rio.write(errors, System.out, RDFFormat.TURTLE);
-			return retValue;
+			Rio.write(results, System.out, RDFFormat.TURTLE);
+			return;
 		}
 
 		for(Path report: reports) {
@@ -104,24 +104,34 @@ public class Main implements Callable<Integer> {
 			}
 			if (ext.equals("ttl")) {
 				try(Writer w = Files.newBufferedWriter(report)) {
-					Rio.write(errors, w, RDFFormat.TURTLE);
+					Rio.write(results, w, RDFFormat.TURTLE);
 				}
 			}
 		}
-		return retValue;
 	}
 
 	@Override
     public Integer call() throws Exception {
 		try {
 			Validator validator = new Validator();
-			Model errors = validator.validate(shacl, data, format);
+			Model results = validator.validate(shacl, data, format);
 			Statistics statistics = new Statistics(validator.getRepository());
-			return writeReports(errors, statistics);
+			writeReports(results, statistics);
+			
+			if (Validator.countErrors(results) > 0) {
+				return 1;
+			}
+			if (Validator.countWarnings(results) > 0) {
+				return 2;
+			}
+			if (Validator.countInfos(results) > 0) {
+				return 3;
+			}
 		} catch (IOException e) {
 			LOG.error(e.getMessage());
 			return -1;
 		}
+		return 0;
 	}
 
 	/**

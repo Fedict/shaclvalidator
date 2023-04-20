@@ -63,7 +63,6 @@ public class TemplateReport {
 	private final static Logger LOG = LoggerFactory.getLogger(TemplateReport.class);
 
 	private final PebbleEngine engine = new PebbleEngine.Builder().build();
-
 	private final Map<String, Object> context = new HashMap<>();
 
 	/**
@@ -84,10 +83,9 @@ public class TemplateReport {
 	 * @param issues validation issues model
 	 * @param data location of the data
 	 * @param shacl location of the SHACL rules
-	 * @return 0 when OK, 1 in case of errors, 2 in case of warnings, 3 in case of recommendations
 	 * @throws IOException 
 	 */
-	public int prepareValidation(Model issues, URL data, URL shacl) throws IOException {
+	public void prepareValidation(Model issues, URL data, URL shacl) throws IOException {
 		Value na = Values.literal("n/a");
 		for (Namespace ns: Util.NS) {
 			issues.setNamespace(ns);
@@ -137,6 +135,10 @@ public class TemplateReport {
 				infos.add(result);
 			}	
 		}
+		
+		LOG.info("Shapes with errors: {}", errors.size());
+		LOG.info("Shapes with warnings: {}", warnings.size());
+		LOG.info("Shapes with recommendations: {}", infos.size());
 
 		context.put("data", data.toString());
 		context.put("shacl", shacl.toString());
@@ -144,21 +146,6 @@ public class TemplateReport {
 		context.put("errors", errors);
 		context.put("warnings", warnings);
 		context.put("infos", infos);
-		
-		if (!errors.isEmpty()) {
-			LOG.error("Shapes with errors: {}", errors.size());
-			return 1;
-		}
-		if (!warnings.isEmpty()) {
-			LOG.warn("Shapes with warnings: {}", warnings.size());
-			return 2;
-		}
-		if (!infos.isEmpty()) {
-			LOG.info("Shapes with recommendations: {}", infos.size());
-			return 3;
-		}
-		LOG.info("No issues found");
-		return 0;
 	}
 
 	/**

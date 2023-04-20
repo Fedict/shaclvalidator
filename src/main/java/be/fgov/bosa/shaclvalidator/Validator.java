@@ -32,6 +32,7 @@ import java.util.Optional;
 
 import org.eclipse.rdf4j.common.exception.ValidationException;
 import org.eclipse.rdf4j.common.transaction.IsolationLevels;
+import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
@@ -45,6 +46,7 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.eclipse.rdf4j.sail.shacl.ShaclSail;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,6 +125,40 @@ public class Validator implements AutoCloseable {
 		}
 		loadShacl(shacl);
 		return validate(data, format);
+	}
+
+	private static int countIssues(Model model, IRI level) {
+		return model.filter(null, SHACL.SEVERITY_PROP, level).size();
+	}
+
+	/**
+	 * Return number of results with severity level sh:Violation
+	 * 
+	 * @param model
+	 * @return number
+	 */
+	public static int countErrors(Model model) {
+		return countIssues(model, SHACL.VIOLATION);
+	}
+
+	/**
+	 * Return number of results with severity level sh:Warning
+	 * 
+	 * @param model
+	 * @return number
+	 */
+	public static int countWarnings(Model model) {
+		return countIssues(model, SHACL.WARNING);
+	}
+
+	/**
+	 * Return number of results with severity level sh:Info
+	 * 
+	 * @param model
+	 * @return number
+	 */
+	public static int countInfos(Model model) {
+		return countIssues(model, SHACL.INFO);
 	}
 
 	/**

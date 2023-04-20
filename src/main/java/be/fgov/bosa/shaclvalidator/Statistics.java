@@ -25,13 +25,20 @@
  */
 package be.fgov.bosa.shaclvalidator;
 
+import be.fgov.bosa.shaclvalidator.helper.Util;
 import be.fgov.bosa.shaclvalidator.dao.CountedThing;
+import be.fgov.bosa.shaclvalidator.helper.DataGovStats;
+import be.fgov.bosa.shaclvalidator.helper.QB;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.eclipse.rdf4j.model.BNode;
 
 import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.util.Values;
@@ -39,6 +46,8 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.Rio;
 
 
 /**
@@ -131,6 +140,80 @@ public class Statistics {
 		return countValues(iris);
 	}
 
+	/**
+	 * Add (DataCube) observations.
+	 * Used for reporting the number of classes and properties.
+	 * 
+	 * @param m RDF model
+	 * @param dataset name of the DataCube dataset
+	 * @param counted list of counted items
+	 */
+	private void addObservations(Model m, String dataset, List<CountedThing> counted) {
+		BNode node = Values.bnode(dataset);
+		for (CountedThing c: counted) {
+			BNode observation = Values.bnode();
+			m.add(observation, RDF.TYPE, QB.OBSERVATION);
+			m.add(observation, QB.DATASET_PROP, node);
+			m.add(observation, DataGovStats.NAME, Values.iri(c.name()));
+			m.add(observation, DataGovStats.NUMBER, Values.literal(c.number()));
+		}
+	}
+	
+	/**
+	 * Add (DataCube) observations.
+	 * Used for reporting the number of property values.
+	 * 
+	 * @param m RDF model
+	 * @param dataset name of the DataCube dataset
+	 * @param counted map with list of counted items
+	 */
+	private void addObservations(Model m, String dataset, Map<String, List<CountedThing>> counted) {
+		BNode node = Values.bnode(dataset);
+		for (String property: counted.keySet()) {
+			IRI name = Values.iri(property);
+			for (CountedThing c: countClasses()) {
+				BNode observation = Values.bnode();
+				m.add(observation, RDF.TYPE, QB.OBSERVATION);
+				m.add(observation, QB.DATASET_PROP, node);
+				m.add(observation, DataGovStats.NAME, name);
+				m.add(observation, DataGovStats.VALUE, Util.toValue(c.name()));
+				m.add(observation, DataGovStats.NUMBER, Values.literal(c.number()));
+			}
+		}
+	}
+
+	/**
+	 * Return statistics as RDF (DataCube)
+	 * 
+	 * @param countClasses
+	 * @param countProperties
+	 * @param countValues
+	 * @return RDF model
+	 * @throws IOException 
+	 */
+	public Model asRDF(boolean countClasses, boolean countProperties, String[] countValues) throws IOException {
+		Model m ;
+		try(InputStream is = getClass().getClassLoader().getResourceAsStream("qb.ttl")) {
+			m = Rio.parse(is, RDFFormat.TURTLE);
+		}
+
+		if (countClasses) {
+			addObservations(m, "classesDataset", countClasses());
+		}
+		if (countProperties) {
+			addObservations(m, "propertiesDataset", countProperties());
+		}
+		if (countValues.length > 0) {
+			addObservations(m, "valuesDataset", countValues(countValues));
+		}
+		return m;
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param repo repository
+	 */
 	/**
 	 * Constructor
 	 * 

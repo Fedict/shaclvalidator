@@ -13,9 +13,11 @@
 
 ### {{ error.message }} : {{ error.issues|length }} errors
 
+{% autoescape false %}
 ```
 {{ error.shape }}
 ```
+{% endautoescape %}
 
 | Focus node | Value |
 |------------|-------|

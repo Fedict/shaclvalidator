@@ -23,12 +23,14 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fgov.bosa.shaclvalidator;
+package be.fgov.bosa.shaclvalidator.helper;
 
 import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.SimpleNamespace;
+import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
@@ -51,6 +53,7 @@ public class Util {
 													ROV.NS, SKOS.NS, VCARD4.NS, 
 													new SimpleNamespace("schema", "https://schema.org/"));
 
+
 	/**
 	 * Return a prefixed version of the IRI
 	 * 
@@ -66,5 +69,18 @@ public class Util {
 		}
 		return iri.stringValue();
 	}
-		
+
+	/**
+	 * Return IRI or literal.
+	 * If the value starts with http, https or mailto, it is assumed to be an IRI.
+	 * 
+	 * @param val string value
+	 * @return IRI or literal
+	 */
+	public static Value toValue(String val) {
+		if (val.startsWith("http://") || val.startsWith("https://") || val.startsWith("mailto:")) {
+			return Values.iri(val);
+		}
+		return Values.literal(val);
+	}
 }

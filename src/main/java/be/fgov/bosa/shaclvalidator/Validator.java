@@ -28,14 +28,19 @@ package be.fgov.bosa.shaclvalidator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.eclipse.rdf4j.common.exception.ValidationException;
 import org.eclipse.rdf4j.common.transaction.IsolationLevels;
+import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.util.Values;
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.repository.Repository;
@@ -106,7 +111,14 @@ public class Validator implements AutoCloseable {
 				return validationException.validationReportAsModel();
 			}
 		}
-		return new LinkedHashModel();
+
+		// everyting ok		
+		Model m = new LinkedHashModel();
+		BNode node = Values.bnode();
+		m.add(node, RDF.TYPE, SHACL.VALIDATION_REPORT);
+		m.add(node, SHACL.CONFORMS, Values.literal(true));
+
+		return m;
 	}
 
 	/**
@@ -124,7 +136,15 @@ public class Validator implements AutoCloseable {
 			conn.clear();
 		}
 		loadShacl(shacl);
-		return validate(data, format);
+		
+		Model m = validate(data, format);
+		// add metadata
+		Resource id = m.filter(null, RDF.TYPE, SHACL.VALIDATION_REPORT).subjects().stream().findFirst().get();
+		m.add(id, DCTERMS.ISSUED, Values.literal(LocalDateTime.now()));
+		m.add(id, DCTERMS.SOURCE, Values.literal(data.toString()));
+		m.add(id, DCTERMS.CONFORMS_TO, Values.literal(shacl.toString()));
+		
+		return m;
 	}
 
 	private static int countIssues(Model model, IRI level) {

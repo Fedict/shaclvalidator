@@ -25,6 +25,7 @@
  */
 package be.fgov.bosa.shaclvalidator;
 
+import be.fgov.bosa.shaclvalidator.helper.Util;
 import be.fgov.bosa.shaclvalidator.dao.CountedThing;
 import be.fgov.bosa.shaclvalidator.dao.ValidationInfo;
 import be.fgov.bosa.shaclvalidator.dao.ValidationIssue;
@@ -112,7 +113,7 @@ public class TemplateReport {
 				
 				ValidationIssue issue = new ValidationIssue(
 					findFirst(violation, violationID, SHACL.FOCUS_NODE).get().stringValue(),
-					((IRI)findFirst(violation, violationID, SHACL.SOURCE_CONSTRAINT_COMPONENT).get()).getLocalName(),
+					((IRI) findFirst(violation, violationID, SHACL.SOURCE_CONSTRAINT_COMPONENT).get()).getLocalName(),
 					findFirst(violation, violationID, SHACL.VALUE).orElse(na).stringValue()
 				);
 				violations.add(issue);

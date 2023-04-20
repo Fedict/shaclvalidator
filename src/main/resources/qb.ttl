@@ -1,0 +1,46 @@
+@prefix qb: <http://purl.org/linked-data/cube#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sdmx-meas: <http://purl.org/linked-data/sdmx/2009/measure#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> . 
+@prefix datagovbe-stats: <http://data.gov.be/mqa/stats#> .
+
+datagovbe-stats:counted1D a qb:DataStructureDefinition ;
+	rdfs:label "Count per thing"@en ;
+	qb:component [ qb:dimension datagovbe-stats:name ];
+	qb:component [ qb:measure datagovbe-stats:number ] .
+
+datagovbe-stats:name a rdf:Property, qb:DimensionProperty;
+	rdfs:label "Name"@en;
+	rdfs:range rdfs:Class .
+
+datagovbe-stats:number a rdf:Property, qb:MeasureProperty ;
+    rdfs:label "Number"@en ;
+    rdfs:subPropertyOf sdmx-meas:obsValue ;
+    rdfs:range xsd:nonNegativeInteger . 
+
+datagovbe-stats:counted2D a qb:DataStructureDefinition ;
+	rdfs:label "Count per thing in 2 dimensions."@en ;
+	qb:component [ qb:dimension datagovbe-stats:name; qb:order 1 ];
+	qb:component [ qb:dimension datagovbe-stats:value; qb:order 2 ];
+	qb:component [ qb:measure datagovbe-stats:number ] .
+
+datagovbe-stats:value a rdf:Property, qb:DimensionProperty;
+	rdfs:label "Value"@en;
+	rdfs:range rdfs:Class .
+
+datagovbe-stats:classesDataset a qb:DataSet ;
+	rdfs:label "Classes"@en ;
+	rdfs:comment "Number of classes" ;
+	qb:structure datagovbe-stats:counted1D .
+
+datagovbe-stats:propertiesDataset a qb:DataSet ;
+	rdfs:label "Properties"@en ;
+	rdfs:comment "Number of properties (predicates)"@en ;
+	qb:structure datagovbe-stats:counted1D .
+
+datagovbe-stats:valuesDataset a qb:DataSet ;
+	rdfs:label "Properties"@en ;
+	rdfs:comment "Values per property (predicate)"@en ;
+	qb:structure datagovbe-stats:counted2D .
+       

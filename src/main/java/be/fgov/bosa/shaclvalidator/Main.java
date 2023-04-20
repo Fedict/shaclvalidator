@@ -105,6 +105,8 @@ public class Main implements Callable<Integer> {
 			if (ext.equals("ttl")) {
 				try(Writer w = Files.newBufferedWriter(report)) {
 					Rio.write(results, w, RDFFormat.TURTLE);
+					Model m = stats.asRDF(countClasses, countProperties, countValues);
+					Rio.write(m, w, RDFFormat.TURTLE);
 				}
 			}
 		}

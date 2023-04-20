@@ -25,18 +25,19 @@
  */
 package be.fgov.bosa.shaclvalidator;
 
+import be.fgov.bosa.shaclvalidator.reports.Report;
+import be.fgov.bosa.shaclvalidator.reports.ReportFactory;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import org.apache.commons.io.FilenameUtils;
 
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.rio.RDFFormat;
-import org.eclipse.rdf4j.rio.Rio;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,31 +84,17 @@ public class Main implements Callable<Integer> {
 	 * @throws IOException
 	 * @return status code
 	 */
-	private void writeReports(Model results, Statistics stats) throws IOException {
-		TemplateReport tmpl = new TemplateReport();
-		tmpl.prepareValidation(results, data, shacl);
-		tmpl.prepareStatistics(stats, countClasses, countProperties, countValues);
-
-		if (reports == null) {
-			Rio.write(results, System.out, RDFFormat.TURTLE);
-			return;
-		}
-
+	private void writeReports(Model results, Map<String,Object> stats) throws IOException {
 		for(Path report: reports) {
 			LOG.info("Writing report to {}", report);
 			String ext = FilenameUtils.getExtension(report.toString());
-	
-			if (ext.equals("md") || ext.equals("html")) {
-				try(Writer w = Files.newBufferedWriter(report)) {
-					tmpl.merge(ext, w);					
-				}
-			}
-			if (ext.equals("ttl")) {
-				try(Writer w = Files.newBufferedWriter(report)) {
-					Rio.write(results, w, RDFFormat.TURTLE);
-					Model m = stats.asRDF(countClasses, countProperties, countValues);
-					Rio.write(m, w, RDFFormat.TURTLE);
-				}
+			
+			Report tmpl = ReportFactory.createReport(ext);
+			tmpl.reportValidation(results, data, shacl);
+			tmpl.reportStatistics(stats);
+
+			try(Writer w = Files.newBufferedWriter(report)) {
+				tmpl.write(w);					
 			}
 		}
 	}
@@ -118,7 +105,8 @@ public class Main implements Callable<Integer> {
 			Validator validator = new Validator();
 			Model results = validator.validate(shacl, data, format);
 			Statistics statistics = new Statistics(validator.getRepository());
-			writeReports(results, statistics);
+			Map<String,Object> stats = statistics.collect(countClasses, countProperties, countValues);
+			writeReports(results, stats);
 			
 			if (Validator.countErrors(results) > 0) {
 				return 1;

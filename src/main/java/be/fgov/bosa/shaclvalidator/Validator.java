@@ -28,7 +28,6 @@ package be.fgov.bosa.shaclvalidator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.eclipse.rdf4j.common.exception.ValidationException;
@@ -39,7 +38,6 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Values;
-import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDF4J;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
@@ -137,14 +135,7 @@ public class Validator implements AutoCloseable {
 		}
 		loadShacl(shacl);
 		
-		Model m = validate(data, format);
-		// add metadata
-		Resource id = m.filter(null, RDF.TYPE, SHACL.VALIDATION_REPORT).subjects().stream().findFirst().get();
-		m.add(id, DCTERMS.ISSUED, Values.literal(LocalDateTime.now()));
-		m.add(id, DCTERMS.SOURCE, Values.literal(data.toString()));
-		m.add(id, DCTERMS.CONFORMS_TO, Values.literal(shacl.toString()));
-		
-		return m;
+		return validate(data, format);
 	}
 
 	private static int countIssues(Model model, IRI level) {

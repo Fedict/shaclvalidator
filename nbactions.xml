@@ -10,9 +10,9 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:3.1.0:exec</goal>
             </goals>
             <properties>
-                <exec.vmArgs>\</exec.vmArgs>
+                <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>--data=file:///C:\Datagov\data\statbelopen\statbelopen.nt --shacl=https://raw.githubusercontent.com/belgif/inspire-dcat/main/bedcatap2.shacl --report=C:\Datagov\data\statbelopen\report.html --report=C:\Datagov\data\statbelopen\report.ttl --report=C:\Datagov\data\biodiversity\report.md --countClasses --countProperties  --countValues=dcat:theme --countValues=dcat:mediaType</exec.appArgs>
+                <exec.appArgs>--data=file:///C:\data\test.ttl --shacl=file:///C:\data\test.shacl --report=C:\Datagov\testreport.html</exec.appArgs>
                 <exec.mainClass>${packageClassName}</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
@@ -27,9 +27,9 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:3.1.0:exec</goal>
             </goals>
             <properties>
-                <exec.vmArgs>\ -agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
+                <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>--data=file:///C:\Datagov\data\statbelopen\statbelopen.nt --shacl=https://raw.githubusercontent.com/belgif/inspire-dcat/main/bedcatap2.shacl --report=C:\Datagov\data\statbelopen\report.html --report=C:\Datagov\data\statbelopen\report.ttl --report=C:\Datagov\data\biodiversity\report.md --countClasses --countProperties  --countValues=dcat:theme --countValues=dcat:mediaType</exec.appArgs>
+                <exec.appArgs>--data=file:///C:\data\test.ttl --shacl=file:///C:\data\test.shacl --report=C:\Datagov\testreport.html</exec.appArgs>
                 <exec.mainClass>${packageClassName}</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
@@ -45,11 +45,11 @@
                 <goal>org.codehaus.mojo:exec-maven-plugin:3.1.0:exec</goal>
             </goals>
             <properties>
-                <exec.vmArgs>\</exec.vmArgs>
+                <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.mainClass>${packageClassName}</exec.mainClass>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--data=file:///C:\Datagov\data\statbelopen\statbelopen.nt --shacl=https://raw.githubusercontent.com/belgif/inspire-dcat/main/bedcatap2.shacl --report=C:\Datagov\data\statbelopen\report.html --report=C:\Datagov\data\statbelopen\report.ttl --report=C:\Datagov\data\biodiversity\report.md --countClasses --countProperties  --countValues=dcat:theme --countValues=dcat:mediaType</exec.appArgs>
+                <exec.appArgs>--data=file:///C:\data\test.ttl --shacl=file:///C:\data\test.shacl --report=C:\Datagov\testreport.html</exec.appArgs>
             </properties>
         </action>
     </actions>

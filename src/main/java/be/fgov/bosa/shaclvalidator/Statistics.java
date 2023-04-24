@@ -157,7 +157,7 @@ public class Statistics {
 			LOG.info("Properties: {}", countProperties.size());
 			stats.put("properties", countProperties);
 		}
-		if (values.length > 0) {
+		if (values != null && values.length > 0) {
 			Map<String, List<CountedThing>> countValues = countValues(values);
 			LOG.info("Value details: {}", countValues.size());
 			stats.put("values", countValues);

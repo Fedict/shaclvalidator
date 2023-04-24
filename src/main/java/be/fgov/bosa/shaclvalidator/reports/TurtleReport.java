@@ -42,6 +42,7 @@ import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -53,14 +54,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Validation report based upon a text template
+ * Validation report in RDF/Turtle
  * 
  * @author Bart Hanssens
  */
 public class TurtleReport implements Report {
 	private final static Logger LOG = LoggerFactory.getLogger(TurtleReport.class);
 
-	private Model model;
+	private Model model = new LinkedHashModel();
 
 	/**
 	 * Add (DataCube) observations.

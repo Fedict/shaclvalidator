@@ -39,6 +39,7 @@ import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +85,7 @@ public class TemplatedReport implements Report {
 	}
 
 	@Override
-	public void reportValidation(Model issues, URL data, URL shacl) {
+	public void reportValidation(Model issues, URL data, URL[] shacls) {
 		Value na = Values.literal("n/a");
 		for (Namespace ns: Util.NS) {
 			issues.setNamespace(ns);
@@ -140,7 +141,7 @@ public class TemplatedReport implements Report {
 		LOG.info("Shapes with recommendations: {}", infos.size());
 
 		context.put("data", data.toString());
-		context.put("shacl", shacl.toString());
+		context.put("shacls", Arrays.asList(shacls));
 		context.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 		context.put("errors", errors);
 		context.put("warnings", warnings);

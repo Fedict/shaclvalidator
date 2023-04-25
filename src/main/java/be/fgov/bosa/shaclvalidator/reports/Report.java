@@ -42,9 +42,9 @@ public interface Report {
 	 * 
 	 * @param issues validation issues model
 	 * @param data location of the data
-	 * @param shacl location of the SHACL rules
+	 * @param shacls location(s) of the SHACL rules
 	 */
-	public void reportValidation(Model issues, URL data, URL shacl);
+	public void reportValidation(Model issues, URL data, URL[] shacls);
 	
 	/**
 	 * Report the statistics

@@ -61,8 +61,8 @@ public class Main implements Callable<Integer> {
     @Option(names = "--format", description = "Data file format")
     Optional<String> format;
 
-    @Option(names = "--shacl", description = "SHACL file location (URL or local file)", required = true)
-    URL shacl;
+    @Option(names = "--shacl", description = "SHACL file(s) location (URL or local file)", required = true)
+    URL[] shacl;
 
     @Option(names = "--report", description = "Write report to this file(s), format can be HTML, TTL or MD")
     Path[] reports;

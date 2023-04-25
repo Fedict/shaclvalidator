@@ -72,17 +72,20 @@ public class Validator implements AutoCloseable {
 	/**
 	 * Load SHACL rules (Turtle)
 	 * 
-	 * @param location location of the SHACL file
+	 * @param locations location of the SHACL file(s)
 	 * @throws IOException 
 	 */
-	private void loadShacl(URL location) throws IOException {
-		LOG.info("Loading shacl from {}", location.toString());
-		try (RepositoryConnection conn = repo.getConnection();
-			BufferedInputStream bisShacl = new BufferedInputStream(location.openStream())) {
-
+	private void loadShacl(URL[] locations) throws IOException {
+		try (RepositoryConnection conn = repo.getConnection()) {
 			conn.begin();
-			conn.add(bisShacl, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
-			// ugly: remove shacl:name from NodeShapes (range is PropertyShape, which confuses the SHACL Sail) 
+	
+			for (URL location: locations) {
+				LOG.info("Loading shacl from {}", location.toString());
+				try(BufferedInputStream bisShacl = new BufferedInputStream(location.openStream())) {
+					conn.add(bisShacl, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
+				}
+			}
+			// ugly: remove shacl:name from NodeShapes (range is PropertyShape, which confuses the SHACL Sail)
 			conn.remove((Resource) null, SHACL.NAME, null, RDF4J.SHACL_SHAPE_GRAPH);
 			// pre-4.3.0 doesn't support severity (yet) 
 			severity = conn.getStatements(null, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH)
@@ -91,6 +94,12 @@ public class Validator implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Fix for fixing severity in pre-4.3.0 RDF4J
+	 * 
+	 * @param m
+	 * @return 
+	 */
 	private Model fixSeverity(Model m) {
 		severity.forEach((k,v) ->  {
 			m.remove(k, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH);
@@ -136,24 +145,31 @@ public class Validator implements AutoCloseable {
 	}
 
 	/**
-	 * Validate an RDF data file (can be a local file or URL) using a SHACL file.
+	 * Validate an RDF data file (can be a local file or URL) using one or more SHACL files.
 	 * Format is optional: when not present the format will be guessed based on the file extension.
 	 * 
-	 * @param shacl location of the SHACL file
+	 * @param shacls location of the SHACL file
 	 * @param data location of the data
 	 * @param format optional format
 	 * @return model containing results
 	 * @throws IOException 
 	 */
-	public Model validate(URL shacl, URL data, Optional<String> format) throws IOException {
+	public Model validate(URL[] shacls, URL data, Optional<String> format) throws IOException {
 		try (RepositoryConnection conn = repo.getConnection()) {
 			conn.clear();
 		}
-		loadShacl(shacl);
+		loadShacl(shacls);
 		
 		return validate(data, format);
 	}
 
+	/**
+	 * Return number of results with a specific severity level
+	 * 
+	 * @param model
+	 * @param level
+	 * @return 
+	 */
 	private static int countIssues(Model model, IRI level) {
 		return model.filter(null, SHACL.SEVERITY_PROP, level).size();
 	}

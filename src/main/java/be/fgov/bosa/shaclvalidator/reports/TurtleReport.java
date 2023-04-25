@@ -106,13 +106,15 @@ public class TurtleReport implements Report {
 	}
 
 	@Override
-	public void reportValidation(Model issues, URL data, URL shacl) {
+	public void reportValidation(Model issues, URL data, URL[] shacls) {
 		model.addAll(issues);
 
 		Resource id = model.filter(null, RDF.TYPE, SHACL.VALIDATION_REPORT).subjects().stream().findFirst().get();
 		model.add(id, DCTERMS.ISSUED, Values.literal(LocalDateTime.now()));
 		model.add(id, DCTERMS.SOURCE, Values.literal(data.toString()));
-		model.add(id, DCTERMS.CONFORMS_TO, Values.literal(shacl.toString()));
+		for (URL shacl: shacls) {
+			model.add(id, DCTERMS.CONFORMS_TO, Values.literal(shacl.toString()));
+		}
 	}
 
 	@Override

@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -139,10 +140,10 @@ public class TemplatedReport implements Report {
 		LOG.info("Shapes with errors: {}", errors.size());
 		LOG.info("Shapes with warnings: {}", warnings.size());
 		LOG.info("Shapes with recommendations: {}", infos.size());
-
+		
 		context.put("data", data.toString());
-		context.put("shacls", Arrays.asList(shacls));
-		context.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		context.put("shacls", Arrays.asList(shacls).stream().map(URL::toString).collect(Collectors.toList()));
+		context.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 		context.put("errors", errors);
 		context.put("warnings", warnings);
 		context.put("infos", infos);

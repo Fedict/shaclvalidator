@@ -36,10 +36,17 @@ table.error th {
 	background-color: lightcoral;
 }
 table.warning th {
-	background-color: lightyellow;
+	background-color: lightsalmon;
+}
+table.recommendation th {
+	background-color: lightgreen;
 }
 table.info th {
 	background-color: lightsteelblue;
+}
+
+details {
+	margin-top: 0.75em;
 }
 	</style>
 </head>
@@ -56,7 +63,7 @@ table.info th {
 
 	<hr/>
 	<section class="error">
-		<h2>Errors: {{ errors|length }}</h2>
+		<h2>Errors: {{ errors|length }} shapes</h2>
 		{% for error in errors | sort %}
 		<section>
 			<details>
@@ -74,7 +81,7 @@ table.info th {
 	</section>
 
 	<section class="warning">
-		<h2>Warnings: {{ warnings|length }}</h2>
+		<h2>Warnings: {{ warnings|length }} shapes</h2>
 		{% for warning in warnings %}
 		<details>
 			<summary>{{ warning.message }}</summary>
@@ -89,14 +96,14 @@ table.info th {
 		{% endfor %}
 	</section>
 
-	<section class="info">
-		<h2>Recommendations: {{ infos|length }}</h2>
+	<section class="recommendation">
+		<h2>Recommendations: {{ infos|length }} shapes</h2>
 		{% for info in infos %}
 		<details>
 			<summary>{{ info.message }}</summary>
 			<pre>{{ info.shape }}</pre>
 		</details>
-		<table class="info">
+		<table class="recommendation">
 			<tr><th>Focus node</th><th>Value</th></tr>
 			{% for issue in info.issues %}
 			<tr><td>{{ issue.node }}</td><td>{{ issue.value }}</td></tr>

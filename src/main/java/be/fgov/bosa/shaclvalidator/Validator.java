@@ -28,7 +28,9 @@ package be.fgov.bosa.shaclvalidator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.eclipse.rdf4j.common.exception.ValidationException;
 import org.eclipse.rdf4j.common.transaction.IsolationLevels;
@@ -36,6 +38,8 @@ import org.eclipse.rdf4j.model.BNode;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -63,6 +67,7 @@ public class Validator implements AutoCloseable {
 	private final static Logger LOG = LoggerFactory.getLogger(Validator.class);
 
 	private final Repository repo;
+	private Map<Resource, Value> severity;
 
 	/**
 	 * Load SHACL rules (Turtle)
@@ -79,8 +84,19 @@ public class Validator implements AutoCloseable {
 			conn.add(bisShacl, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
 			// ugly: remove shacl:name from NodeShapes (range is PropertyShape, which confuses the SHACL Sail) 
 			conn.remove((Resource) null, SHACL.NAME, null, RDF4J.SHACL_SHAPE_GRAPH);
+			// pre-4.3.0 doesn't support severity (yet) 
+			severity = conn.getStatements(null, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH)
+							.stream().collect(Collectors.toMap(Statement::getSubject, Statement::getObject));
 			conn.commit();
 		}
+	}
+
+	private Model fixSeverity(Model m) {
+		severity.forEach((k,v) ->  {
+			m.remove(k, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH);
+			m.add(k, SHACL.SEVERITY_PROP, v, RDF4J.SHACL_SHAPE_GRAPH);
+		});
+		return m;
 	}
 
 	/**
@@ -106,7 +122,7 @@ public class Validator implements AutoCloseable {
 		} catch (RepositoryException exception) {
 			Throwable cause = exception.getCause();
 			if (cause instanceof ValidationException validationException) {
-				return validationException.validationReportAsModel();
+				return fixSeverity(validationException.validationReportAsModel());
 			}
 		}
 

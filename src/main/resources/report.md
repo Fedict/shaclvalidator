@@ -8,7 +8,7 @@
 
 ---
 
-## Errors: : {{ errors|length }}
+## Errors: {{ errors|length }} shapes
 {% for error in errors | sort %}
 
 ### {{ error.message }} : {{ error.issues|length }} errors
@@ -29,7 +29,7 @@
 
 ---
 
-## Warnings: {{ warnings|length }}
+## Warnings: {{ warnings|length }} shapes
 {% for warning in warnings %}
 
 ### {{ warning.message }}
@@ -48,7 +48,7 @@
 
 ---
 
-## Recommendations: {{ infos|length }}
+## Recommendations: {{ infos|length }} shapes
 {% for info in infos %}
 
 ### {{ info.message }}

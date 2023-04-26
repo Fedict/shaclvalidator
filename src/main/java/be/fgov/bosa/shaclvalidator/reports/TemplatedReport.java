@@ -52,10 +52,13 @@ import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.WriterConfig;
+import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +88,38 @@ public class TemplatedReport implements Report {
 		return m.filter(id, property, null).objects().stream().findFirst();
 	}
 
+	/**
+	 * Get the shape as a string, with some embedding of additional details
+	 * 
+	 * @param issues model with all issues
+	 * @param shapeID ID of the shape
+	 * @return turtle result as string
+	 */
+	private String getShapeString(Model issues, Resource shapeID) {
+		Model m = new LinkedHashModel();
+		m.setNamespace(SHACL.NS);
+
+		Model shape = issues.filter(shapeID, null, null);
+		m.addAll(shape);
+		Value value = findFirst(issues, shapeID, SHACL.NODE).orElse(null);
+		// add more detail
+		if (value != null) {
+			Model node = issues.filter((Resource) value, null, null);
+			m.addAll(node);
+			Set<Value> props = node.filter((Resource) value, SHACL.PROPERTY, null).objects();
+
+			for(Value prop: props) {
+				m.addAll(issues.filter((Resource) prop, null, null));
+			}
+		}
+		StringWriter sw = new StringWriter();
+		WriterConfig config = new WriterConfig();
+		config.set(BasicWriterSettings.PRETTY_PRINT, true);
+		config.set(BasicWriterSettings.INLINE_BLANK_NODES, true);
+		Rio.write(m, sw, RDFFormat.TURTLE, config);
+		return sw.toString();
+	}
+
 	@Override
 	public void reportValidation(Model issues, URL data, URL[] shacls) {
 		Value na = Values.literal("n/a");
@@ -100,10 +135,7 @@ public class TemplatedReport implements Report {
 		Set<Value> shapeIDs = issues.filter(null, SHACL.SOURCE_SHAPE, null).objects();
 		
 		for (Value shapeID: shapeIDs) {
-			Model shape = issues.filter((Resource) shapeID, null, null);
-			StringWriter sw = new StringWriter();
-			Rio.write(shape, sw, RDFFormat.TURTLE);
-			String str = sw.toString();
+			String str = getShapeString(issues, (Resource) shapeID);
 			
 			Set<Resource> violationIDs = issues.filter(null, SHACL.SOURCE_SHAPE, shapeID).subjects();
 			List<ValidationIssue> violations = new ArrayList<>(violationIDs.size());
@@ -121,12 +153,12 @@ public class TemplatedReport implements Report {
 			// all validation issues are actually on same component
 			String component = violations.get(0).component();
 
-			IRI path = (IRI) findFirst(shape, (Resource) shapeID, SHACL.PATH).get();
+			IRI path = (IRI) findFirst(issues, (Resource) shapeID, SHACL.PATH).get();
 			String msg = (path != null) ? Util.prefixedIRI(path) + " " + component : component;
 
 			ValidationInfo result = new ValidationInfo(shapeID.stringValue(), str, msg, violations);
 			// check severity, default is violation
-			IRI severity = (IRI) findFirst(shape, (Resource) shapeID, SHACL.SEVERITY_PROP).orElse(SHACL.VIOLATION);
+			IRI severity = (IRI) findFirst(issues, (Resource) shapeID, SHACL.SEVERITY_PROP).orElse(SHACL.VIOLATION);
 
 			if (severity.equals(SHACL.VIOLATION)) {
 				errors.add(result);

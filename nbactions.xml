@@ -12,7 +12,7 @@
             <properties>
                 <exec.vmArgs></exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>--data=file:///C:\Datagov\data\statbelopen\statbelopen.nt --shacl=https://raw.githubusercontent.com/belgif/inspire-dcat/main/bedcatap2.shacl --report=C:\Datagov\data\statbelopen\report.html --report=C:\Datagov\data\statbelopen\report.ttl --report=C:\Datagov\data\biodiversity\report.md --countClasses --countProperties  --countValues=dcat:theme --countValues=dcat:mediaType</exec.appArgs>
+                <exec.appArgs>--data=file:///C:\datagov\data\bipt\bipt.nt --shacl=https://raw.githubusercontent.com/SEMICeu/DCAT-AP/2.1.0-draft/releases/2.1.0/dcat-ap_2.1.0_shacl_shapes.ttl --shacl=https://raw.githubusercontent.com/SEMICeu/DCAT-AP/2.1.0-draft/releases/2.1.0/dcat-ap_2.1.0_shacl_mdr-vocabularies.shape.ttl --report=C:\datagov\data\bipt\report-dcatap2.html --report=C:\datagov\data\bipt\report-dcatap2.ttl --countClasses --countProperties --countValues=dcat:theme --countValues=dcat:mediaType --countValues=dcterms:license</exec.appArgs>
                 <exec.mainClass>${packageClassName}</exec.mainClass>
                 <exec.executable>java</exec.executable>
             </properties>
@@ -29,7 +29,7 @@
             <properties>
                 <exec.vmArgs>-agentlib:jdwp=transport=dt_socket,server=n,address=${jpda.address}</exec.vmArgs>
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
-                <exec.appArgs>--data=file:///C:\Datagov\data\statbelopen\statbelopen.nt --shacl=https://raw.githubusercontent.com/belgif/inspire-dcat/main/bedcatap2.shacl --report=C:\Datagov\data\statbelopen\report.html --report=C:\Datagov\data\statbelopen\report.ttl --report=C:\Datagov\data\biodiversity\report.md --countClasses --countProperties  --countValues=dcat:theme --countValues=dcat:mediaType</exec.appArgs>
+                <exec.appArgs>--data=file:///C:\datagov\data\bipt\bipt.nt --shacl=https://raw.githubusercontent.com/SEMICeu/DCAT-AP/2.1.0-draft/releases/2.1.0/dcat-ap_2.1.0_shacl_shapes.ttl --shacl=https://raw.githubusercontent.com/SEMICeu/DCAT-AP/2.1.0-draft/releases/2.1.0/dcat-ap_2.1.0_shacl_mdr-vocabularies.shape.ttl --report=C:\datagov\data\bipt\report-dcatap2.html --report=C:\datagov\data\bipt\report-dcatap2.ttl --countClasses --countProperties --countValues=dcat:theme --countValues=dcat:mediaType --countValues=dcterms:license</exec.appArgs>
                 <exec.mainClass>${packageClassName}</exec.mainClass>
                 <exec.executable>java</exec.executable>
                 <jpda.listen>true</jpda.listen>
@@ -49,7 +49,7 @@
                 <exec.args>${exec.vmArgs} -classpath %classpath ${exec.mainClass} ${exec.appArgs}</exec.args>
                 <exec.mainClass>${packageClassName}</exec.mainClass>
                 <exec.executable>java</exec.executable>
-                <exec.appArgs>--data=file:///C:\Datagov\data\statbelopen\statbelopen.nt --shacl=https://raw.githubusercontent.com/belgif/inspire-dcat/main/bedcatap2.shacl --report=C:\Datagov\data\statbelopen\report.html --report=C:\Datagov\data\statbelopen\report.ttl --report=C:\Datagov\data\biodiversity\report.md --countClasses --countProperties  --countValues=dcat:theme --countValues=dcat:mediaType</exec.appArgs>
+                <exec.appArgs>--data=file:///C:\datagov\data\bipt\bipt.nt --shacl=https://raw.githubusercontent.com/SEMICeu/DCAT-AP/2.1.0-draft/releases/2.1.0/dcat-ap_2.1.0_shacl_shapes.ttl --shacl=https://raw.githubusercontent.com/SEMICeu/DCAT-AP/2.1.0-draft/releases/2.1.0/dcat-ap_2.1.0_shacl_mdr-vocabularies.shape.ttl --report=C:\datagov\data\bipt\report-dcatap2.html --report=C:\datagov\data\bipt\report-dcatap2.ttl --countClasses --countProperties --countValues=dcat:theme --countValues=dcat:mediaType --countValues=dcterms:license</exec.appArgs>
             </properties>
         </action>
     </actions>

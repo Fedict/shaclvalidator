@@ -43,7 +43,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -53,6 +52,7 @@ import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
+import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.SHACL;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -77,18 +77,6 @@ public class TemplatedReport implements Report {
 	private final Map<String, Object> context = new HashMap<>();
 
 	/**
-	 * Find first value for a given ID (subject) and property (predicate)
-	 * 
-	 * @param m
-	 * @param id
-	 * @param property
-	 * @return 
-	 */
-	private Optional<Value> findFirst(Model m, Resource id, IRI property) {
-		return m.filter(id, property, null).objects().stream().findFirst();
-	}
-
-	/**
 	 * Get the shape as a string, with some embedding of additional details
 	 * 
 	 * @param issues model with all issues
@@ -101,15 +89,15 @@ public class TemplatedReport implements Report {
 
 		Model shape = issues.filter(shapeID, null, null);
 		m.addAll(shape);
-		Value value = findFirst(issues, shapeID, SHACL.NODE).orElse(null);
-		// add more detail
-		if (value != null) {
-			Model node = issues.filter((Resource) value, null, null);
-			m.addAll(node);
-			Set<Value> props = node.filter((Resource) value, SHACL.PROPERTY, null).objects();
 
-			for(Value prop: props) {
-				m.addAll(issues.filter((Resource) prop, null, null));
+		// add more detail
+		Resource res = Models.getPropertyResource(shape, shapeID, SHACL.NODE).orElse(null);
+		if (res != null) {
+			Model node = issues.filter(res, null, null);
+			m.addAll(node);
+			Set<Resource> props = Models.getPropertyResources(node, res, SHACL.PROPERTY);
+			for(Resource prop: props) {
+				m.addAll(issues.filter(prop, null, null));
 			}
 		}
 		StringWriter sw = new StringWriter();
@@ -144,21 +132,21 @@ public class TemplatedReport implements Report {
 				Model violation = issues.filter(violationID, null, null);
 				
 				ValidationIssue issue = new ValidationIssue(
-					findFirst(violation, violationID, SHACL.FOCUS_NODE).get().stringValue(),
-					((IRI) findFirst(violation, violationID, SHACL.SOURCE_CONSTRAINT_COMPONENT).get()).getLocalName(),
-					findFirst(violation, violationID, SHACL.VALUE).orElse(na).stringValue()
+					(Models.getPropertyResource(violation, violationID, SHACL.FOCUS_NODE).get()).stringValue(),
+					(Models.getPropertyIRI(violation, violationID, SHACL.SOURCE_CONSTRAINT_COMPONENT).get()).getLocalName(),
+					Models.getProperty(violation, violationID, SHACL.VALUE).orElse(na).stringValue()
 				);
 				violations.add(issue);
 			}
 			// all validation issues are actually on same component
 			String component = violations.get(0).component();
 
-			IRI path = (IRI) findFirst(issues, (Resource) shapeID, SHACL.PATH).get();
+			IRI path = Models.getPropertyIRI(issues, (Resource) shapeID, SHACL.PATH).orElse(null);
 			String msg = (path != null) ? Util.prefixedIRI(path) + " " + component : component;
 
 			ValidationInfo result = new ValidationInfo(shapeID.stringValue(), str, msg, violations);
 			// check severity, default is violation
-			IRI severity = (IRI) findFirst(issues, (Resource) shapeID, SHACL.SEVERITY_PROP).orElse(SHACL.VIOLATION);
+			IRI severity = Models.getPropertyIRI(issues, (Resource) shapeID, SHACL.SEVERITY_PROP).orElse(SHACL.VIOLATION);
 
 			if (severity.equals(SHACL.VIOLATION)) {
 				errors.add(result);

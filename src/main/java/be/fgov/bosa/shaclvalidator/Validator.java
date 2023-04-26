@@ -28,6 +28,7 @@ package be.fgov.bosa.shaclvalidator;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,6 +71,58 @@ public class Validator implements AutoCloseable {
 	private Map<Resource, Value> severity;
 
 	/**
+	 * Remove shacl:name from NodeShapes (rdfs:range is PropertyShape only), which confuses the SHACL Sail
+	 * 
+	 * Used by EU DCAT-AP SHACL shapes
+	 * 
+	 * @param conn connection
+	 */
+	private void fixNamesOnNode(RepositoryConnection conn) {
+		conn.remove((Resource) null, SHACL.NAME, null, RDF4J.SHACL_SHAPE_GRAPH);
+	}
+
+	/**
+	 * Remove empty shacl:property on shacl:NodeShape, arguably a bug
+	 * 
+	 * Used by EU DCAT-AP SHACL shapes
+	 * 
+	 * @param conn connection
+	 */
+	private void fixEmptyProperties(RepositoryConnection conn) {
+		// remove empty property shapes values, i.e. remove if they use a blank node which points to nothing
+		List<Statement> blanks = conn.getStatements(null, SHACL.PROPERTY, null, RDF4J.SHACL_SHAPE_GRAPH)
+									.stream()
+									.filter(s -> 
+										conn.getStatements((Resource) s.getObject(), null, null, RDF4J.SHACL_SHAPE_GRAPH)
+											.stream()
+											.count() == 0)
+									.collect(Collectors.toList());
+		conn.remove(blanks, RDF4J.SHACL_SHAPE_GRAPH);
+	
+		// now remove shacl:NodeShape that don't contain shacl:property anymore
+		List<Resource> noshapes = conn.getStatements(null, RDF.TYPE, SHACL.NODE_SHAPE, RDF4J.SHACL_SHAPE_GRAPH)
+									.stream()
+									.filter(s ->
+										conn.getStatements((Resource) s.getSubject(), SHACL.PROPERTY, null, RDF4J.SHACL_SHAPE_GRAPH)
+											.stream()
+											.count() == 0)
+									.map(Statement::getSubject)
+									.collect(Collectors.toList());
+		noshapes.forEach(n -> conn.remove(n, null, null, RDF4J.SHACL_SHAPE_GRAPH));
+	}
+
+	/**
+	 * RDF4J pre-4.3.0 doesn't support severity (yet), so collect info to correct afterwards
+	 * 
+	 * @param conn connection
+	 */
+	private void fixSeverity(RepositoryConnection conn) {
+
+		severity = conn.getStatements(null, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH)
+							.stream().collect(Collectors.toMap(Statement::getSubject, Statement::getObject));
+	}
+
+	/**
 	 * Load SHACL rules (Turtle)
 	 * 
 	 * @param locations location of the SHACL file(s)
@@ -85,11 +138,10 @@ public class Validator implements AutoCloseable {
 					conn.add(bisShacl, "", RDFFormat.TURTLE, RDF4J.SHACL_SHAPE_GRAPH);
 				}
 			}
-			// ugly: remove shacl:name from NodeShapes (range is PropertyShape, which confuses the SHACL Sail)
-			conn.remove((Resource) null, SHACL.NAME, null, RDF4J.SHACL_SHAPE_GRAPH);
-			// pre-4.3.0 doesn't support severity (yet) 
-			severity = conn.getStatements(null, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH)
-							.stream().collect(Collectors.toMap(Statement::getSubject, Statement::getObject));
+			fixNamesOnNode(conn);
+			fixEmptyProperties(conn);
+			fixSeverity(conn);
+
 			conn.commit();
 		}
 	}

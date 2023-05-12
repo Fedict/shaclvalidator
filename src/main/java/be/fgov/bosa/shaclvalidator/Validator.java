@@ -117,7 +117,6 @@ public class Validator implements AutoCloseable {
 	 * @param conn connection
 	 */
 	private void fixSeverity(RepositoryConnection conn) {
-
 		severity = conn.getStatements(null, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH)
 							.stream().collect(Collectors.toMap(Statement::getSubject, Statement::getObject));
 	}
@@ -277,6 +276,7 @@ public class Validator implements AutoCloseable {
 	 */
     public Validator() {
 		ShaclSail shaclSail = new ShaclSail(new MemoryStore());
+		shaclSail.setValidationResultsLimitPerConstraint(25000);
 		repo = new SailRepository(shaclSail);
 	}
 }

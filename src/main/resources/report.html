@@ -86,7 +86,7 @@ details {
 		<h2>Warnings: {{ warnings|length }} shapes</h2>
 		{% for warning in warnings %}
 		<details>
-			<summary>{{ warning.message }}</summary>
+			<summary>{{ warning.message }} : {{ warning.issues|length }} warnings</summary>
 			<pre>{{ warning.shape }}</pre>
 		</details>
 		<table class="warning">
@@ -102,7 +102,7 @@ details {
 		<h2>Recommendations: {{ infos|length }} shapes</h2>
 		{% for info in infos %}
 		<details>
-			<summary>{{ info.message }}</summary>
+			<summary>{{ info.message }} : {{ info.issues|length }} recommendations</summary>
 			<pre>{{ info.shape }}</pre>
 		</details>
 		<table class="recommendation">

@@ -29,7 +29,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,7 +39,6 @@ import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
 import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.util.Values;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
@@ -68,7 +66,6 @@ public class Validator implements AutoCloseable {
 	private final static Logger LOG = LoggerFactory.getLogger(Validator.class);
 
 	private final Repository repo;
-	private Map<Resource, Value> severity;
 
 	/**
 	 * Remove shacl:name from NodeShapes (rdfs:range is PropertyShape only), which confuses the SHACL Sail
@@ -112,16 +109,6 @@ public class Validator implements AutoCloseable {
 	}
 
 	/**
-	 * RDF4J pre-4.3.0 doesn't support severity (yet), so collect info to correct afterwards
-	 * 
-	 * @param conn connection
-	 */
-	private void fixSeverity(RepositoryConnection conn) {
-		severity = conn.getStatements(null, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH)
-							.stream().collect(Collectors.toMap(Statement::getSubject, Statement::getObject));
-	}
-
-	/**
 	 * Load SHACL rules (Turtle)
 	 * 
 	 * @param locations location of the SHACL file(s)
@@ -139,24 +126,9 @@ public class Validator implements AutoCloseable {
 			}
 			fixNamesOnNode(conn);
 			fixEmptyProperties(conn);
-			fixSeverity(conn);
 
 			conn.commit();
 		}
-	}
-
-	/**
-	 * Fix for fixing severity in pre-4.3.0 RDF4J
-	 * 
-	 * @param m
-	 * @return 
-	 */
-	private Model fixSeverity(Model m) {
-		severity.forEach((k,v) ->  {
-			m.remove(k, SHACL.SEVERITY_PROP, null, RDF4J.SHACL_SHAPE_GRAPH);
-			m.add(k, SHACL.SEVERITY_PROP, v, RDF4J.SHACL_SHAPE_GRAPH);
-		});
-		return m;
 	}
 
 	/**
@@ -182,7 +154,7 @@ public class Validator implements AutoCloseable {
 		} catch (RepositoryException exception) {
 			Throwable cause = exception.getCause();
 			if (cause instanceof ValidationException validationException) {
-				return fixSeverity(validationException.validationReportAsModel());
+				return validationException.validationReportAsModel();
 			}
 		}
 

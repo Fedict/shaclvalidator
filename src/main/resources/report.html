@@ -72,12 +72,14 @@ details {
 				<summary>{{ error.message }} : {{ error.issues|length }} errors</summary>
 				<pre>{{ error.shape }}</pre>
 			</details>
+			<details open="true">
 			<table class="error">
 				<tr><th>Focus node</th><th>Value</th></tr>
 				{% for issue in error.issues %}
 				<tr><td>{{ issue.node }}</td><td>{{ issue.value }}</td></tr>
 				{% endfor %}
 			</table>
+			</details>
 		</section>
 		{% endfor %}
 	</section>
@@ -89,12 +91,14 @@ details {
 			<summary>{{ warning.message }} : {{ warning.issues|length }} warnings</summary>
 			<pre>{{ warning.shape }}</pre>
 		</details>
+		<details open="true">
 		<table class="warning">
 			<tr><th>Focus node</th><th>Value</th></tr>
 			{% for issue in warning.issues %}
 			<tr><td>{{ issue.node }}</td><td>{{ issue.value }}</td></tr>
 			{% endfor %}
 		</table>
+		</details>
 		{% endfor %}
 	</section>
 
@@ -105,12 +109,14 @@ details {
 			<summary>{{ info.message }} : {{ info.issues|length }} recommendations</summary>
 			<pre>{{ info.shape }}</pre>
 		</details>
+		<details open="true">
 		<table class="recommendation">
 			<tr><th>Focus node</th><th>Value</th></tr>
 			{% for issue in info.issues %}
 			<tr><td>{{ issue.node }}</td><td>{{ issue.value }}</td></tr>
 			{% endfor %}
 		</table>
+		</details>
 		{% endfor %}
 	</section>
 	<hr/>

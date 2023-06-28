@@ -67,6 +67,9 @@ public class Main implements Callable<Integer> {
     @Option(names = "--report", description = "Write report to this file(s), format can be HTML, TTL or MD")
     Path[] reports;
 
+    @Option(names = "--maxErrors", description = "Maximum number of reports to report")
+    Optional<Integer> maxErrors;
+
     @Option(names = "--countClasses", description = "Count number of classes")
     boolean countClasses;
 
@@ -102,7 +105,7 @@ public class Main implements Callable<Integer> {
 	@Override
     public Integer call() throws Exception {
 		try {
-			Validator validator = new Validator();
+			Validator validator = new Validator(maxErrors.orElse(1000));
 			Model results = validator.validate(shacl, data, format);
 			Statistics statistics = new Statistics(validator.getRepository());
 			Map<String,Object> stats = statistics.collect(countClasses, countProperties, countValues);

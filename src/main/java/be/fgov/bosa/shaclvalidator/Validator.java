@@ -245,10 +245,12 @@ public class Validator implements AutoCloseable {
 
 	/**
 	 * Constructor
+	 * 
+	 * @param maxErrors maximum number of errors per shacl rule
 	 */
-    public Validator() {
+    public Validator(int maxErrors) {
 		ShaclSail shaclSail = new ShaclSail(new MemoryStore());
-		shaclSail.setValidationResultsLimitPerConstraint(25000);
+		shaclSail.setValidationResultsLimitPerConstraint(maxErrors);
 		repo = new SailRepository(shaclSail);
 	}
 }

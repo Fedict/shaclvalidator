@@ -4,7 +4,7 @@
   <groupId>be.fgov.bosa</groupId>
   <artifactId>shaclvalidator</artifactId>
   <name>SHACL Validator</name>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <description>Command-line SHACL validator using Eclipse RDF4J</description>
   <inceptionYear>2023</inceptionYear>
   <developers>
@@ -57,6 +57,6 @@
     <maven.compiler.source>17</maven.compiler.source>
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <rdf4j.version>4.3.2</rdf4j.version>
+    <rdf4j.version>4.3.11</rdf4j.version>
   </properties>
 </project>

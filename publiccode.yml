@@ -28,7 +28,7 @@ description:
       - Generates a human-friendly HTML report
       - Show basic statistics on number of classes and properties, values of chosen properties
 developmentStatus: stable
-softwareVersion: "1.1.0"
+softwareVersion: "1.1.1"
 intendedAudience:
   scope:
     - government

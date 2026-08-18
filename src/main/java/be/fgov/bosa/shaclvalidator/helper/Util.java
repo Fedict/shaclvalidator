@@ -40,6 +40,15 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.ROV;
 import org.eclipse.rdf4j.model.vocabulary.SKOS;
 import org.eclipse.rdf4j.model.vocabulary.VCARD4;
+import org.eclipse.rdf4j.model.vocabulary.annotation.DQV;
+import org.eclipse.rdf4j.model.vocabulary.annotation.OA;
+import org.eclipse.rdf4j.model.vocabulary.biblio.BIBO;
+import org.eclipse.rdf4j.model.vocabulary.eu.ADMS;
+import org.eclipse.rdf4j.model.vocabulary.eu.CiteDCATAP;
+import org.eclipse.rdf4j.model.vocabulary.eu.DCATAPHVD;
+import org.eclipse.rdf4j.model.vocabulary.eu.GeoDCATAP;
+import org.eclipse.rdf4j.model.vocabulary.eu.HealthDCATAP;
+import org.eclipse.rdf4j.model.vocabulary.eu.MobilityDCATAP;
 
 
 /**
@@ -49,9 +58,15 @@ import org.eclipse.rdf4j.model.vocabulary.VCARD4;
  */
 public class Util {
 
-	public final static List<Namespace> NS = List.of(DCAT.NS, DCTERMS.NS, FOAF.NS, ORG.NS, RDF.NS, RDFS.NS,
-													ROV.NS, SKOS.NS, VCARD4.NS, 
-													new SimpleNamespace("schema", "https://schema.org/"));
+	public final static List<Namespace> NS;
+	
+	static {
+		NS = List.of(DCAT.NS, DCTERMS.NS, FOAF.NS, ORG.NS, RDF.NS, RDFS.NS,
+					ROV.NS, SKOS.NS, VCARD4.NS, new SimpleNamespace("schema", "https://schema.org/"));
+		NS.addAll(
+				List.of(CiteDCATAP.NS, DCATAPHVD.NS, GeoDCATAP.NS, HealthDCATAP.NS, MobilityDCATAP.NS, 
+						ADMS.NS, BIBO.NS, DQV.NS, OA.NS));
+	}
 
 
 	/**

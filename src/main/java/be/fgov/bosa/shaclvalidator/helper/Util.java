@@ -25,6 +25,7 @@
  */
 package be.fgov.bosa.shaclvalidator.helper;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Namespace;
@@ -35,6 +36,7 @@ import org.eclipse.rdf4j.model.vocabulary.DCAT;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.ORG;
+import org.eclipse.rdf4j.model.vocabulary.PROV;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.ROV;
@@ -58,14 +60,16 @@ import org.eclipse.rdf4j.model.vocabulary.eu.MobilityDCATAP;
  */
 public class Util {
 
-	public final static List<Namespace> NS;
+	public final static List<Namespace> NS = new ArrayList<>(20);
 	
 	static {
-		NS = List.of(DCAT.NS, DCTERMS.NS, FOAF.NS, ORG.NS, RDF.NS, RDFS.NS,
-					ROV.NS, SKOS.NS, VCARD4.NS, new SimpleNamespace("schema", "https://schema.org/"));
+		NS.addAll(
+				List.of(DCAT.NS, DCTERMS.NS, FOAF.NS, ORG.NS, RDF.NS, RDFS.NS,
+						ROV.NS, SKOS.NS, VCARD4.NS, 
+						new SimpleNamespace("schema", "https://schema.org/")));
 		NS.addAll(
 				List.of(CiteDCATAP.NS, DCATAPHVD.NS, GeoDCATAP.NS, HealthDCATAP.NS, MobilityDCATAP.NS, 
-						ADMS.NS, BIBO.NS, DQV.NS, OA.NS));
+						ADMS.NS, BIBO.NS, DQV.NS, OA.NS, PROV.NS));
 	}
 
 

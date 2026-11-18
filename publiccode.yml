@@ -2,7 +2,7 @@ publiccodeYmlVersion: "0.4.0"
 name: SHACL Validator
 url: "https://github.com/Fedict/shaclvalidator"
 softwareType: "standalone/desktop"
-releaseDate: "2025-08-18"
+releaseDate: "2026-11-18"
 platforms:
   - windows
   - linux
@@ -28,7 +28,7 @@ description:
       - Generates a human-friendly HTML report
       - Show basic statistics on number of classes and properties, values of chosen properties
 developmentStatus: stable
-softwareVersion: "1.1.1"
+softwareVersion: "1.1.2"
 intendedAudience:
   scope:
     - government
@@ -51,6 +51,6 @@ usedBy:
 dependsOn:
   open:
     - name: "Java runtime"
-      versionMin: "17"
+      versionMin: "21"
   proprietary: []
   hardware: []
